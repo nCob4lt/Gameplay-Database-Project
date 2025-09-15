@@ -18,7 +18,7 @@ class QueryCog(commands.Cog):
 
         embed = discord.Embed(
             title=f"Creator overview : {get[0][1]}",
-            description="Infos",
+            description="Infos -------------------------------------------------------------------",
             color=discord.Color.dark_grey()
         )
 
@@ -46,7 +46,7 @@ class QueryCog(commands.Cog):
 
         embed = discord.Embed(
             title=f"Layout overview : {get[0][4]}",
-            description="Infos",
+            description="Infos -------------------------------------------------------------------",
             color=discord.Color.dark_grey()
         )
 
@@ -78,7 +78,7 @@ class QueryCog(commands.Cog):
 
         embed = discord.Embed(
             title=f"Collab overview : {get[0][3]}",
-            description="Infos",
+            description="Infos -------------------------------------------------------------------",
             color=discord.Color.dark_teal()
         )
 
@@ -108,7 +108,7 @@ class QueryCog(commands.Cog):
 
         embed = discord.Embed(
             title=f"Music overview : {get[0][1]}",
-            description="Infos",
+            description="Infos -------------------------------------------------------------------",
             color=discord.Color.dark_gold()
         )
 
@@ -137,7 +137,7 @@ class QueryCog(commands.Cog):
 
         embed = discord.Embed(
             title=f"Artist overview : {get[0][1]}",
-            description="Infos",
+            description="Infos -------------------------------------------------------------------",
             color=discord.Color.dark_blue()
         )
 

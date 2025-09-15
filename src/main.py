@@ -20,7 +20,7 @@ class GameplayDatabase(commands.Bot):
         await bot.add_cog(QueryCog(bot))
 
         synced = await self.tree.sync()
-        applogger.info(f"Commandes sync : {[cmd.name for cmd in synced]}")
+        applogger.info(f"Synchronized commands : {[cmd.name for cmd in synced]}")
 
 bot = GameplayDatabase()
 bot.remove_command("help")

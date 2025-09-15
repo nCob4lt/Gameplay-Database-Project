@@ -21,7 +21,7 @@ class RegistrationCog(commands.Cog):
         self.bot = bot
 
     @discord.app_commands.command(name="add_creator", description="Adds directly a creator and its info into the database (prior confirmation)")
-    @discord.app_commands.describe(user="Creator discord user (discord mention)")
+    @discord.app_commands.describe(user="Creator discord user (discord mention expected)")
     @discord.app_commands.describe(nationality="Creator nationality (prior confirmation)")
     @discord.app_commands.describe(yt="Youtube link to their channel (leave blank if none)")
     async def add_creator(self, interaction: discord.Interaction, user: discord.User, nationality: str, yt: str = None):
@@ -37,10 +37,10 @@ class RegistrationCog(commands.Cog):
                 color=discord.Color.dark_grey()
             )
         
-        embed.add_field(name="Username", value=user.global_name, inline=True)
-        embed.add_field(name="Nationality", value=nationality, inline=True)
-        embed.add_field(name="Discord username", value=user.name, inline=True)
-        embed.add_field(name="Youtube", value=f"[Open in browser]({yt})" if yt else None, inline=True)
+        embed.add_field(name="Username", value=user.global_name, inline=False)
+        embed.add_field(name="Nationality", value=nationality, inline=False)
+        embed.add_field(name="Discord username", value=user.name, inline=False)
+        embed.add_field(name="Youtube", value=f"[Open in browser]({yt})" if yt else None, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.set_footer(text="Gameplay Database")
@@ -50,7 +50,7 @@ class RegistrationCog(commands.Cog):
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="add_layout", description="Adds directly a layout and its info into the database (prior confirmation)")
-    @discord.app_commands.describe(creator="Creator of the layout")
+    @discord.app_commands.describe(creator="Creator of the layout (discord mention expected)")
     @discord.app_commands.describe(name="Name of the layout")
     @discord.app_commands.describe(length="Length of the layout")
     @discord.app_commands.describe(yt="Youtube link of the layout")
@@ -64,7 +64,7 @@ class RegistrationCog(commands.Cog):
     async def add_layout(
         self,
         interaction: discord.Interaction,
-        creator: str,
+        creator: discord.User,
         name: str,
         length: str,
         yt: str,
@@ -78,7 +78,7 @@ class RegistrationCog(commands.Cog):
         
         registrator = interaction.user.name
         await database.database_queue.put((database.register_layout,
-                                            (creator, name, length, yt, music_name, music_artist, music_ngid, type, igid, masterlevel, recorder_notes, registrator,),
+                                            (creator.global_name, name, length, yt, music_name, music_artist, music_ngid, type, igid, masterlevel, recorder_notes, registrator,),
                                               {}))
 
         embed = discord.Embed(
@@ -87,26 +87,28 @@ class RegistrationCog(commands.Cog):
             color=discord.Color.dark_grey()
         )
 
-        embed.add_field(name="Creator", value=creator, inline=True)
-        embed.add_field(name="Name", value=name, inline=True)
-        embed.add_field(name="Length", value=length, inline=True)
-        embed.add_field(name="Youtube link", value=f"[Open in browser]({yt})" if yt else None, inline=True)
-        embed.add_field(name="Music name", value=music_name, inline=True)
-        embed.add_field(name="Music artist", value=music_artist, inline=True)
-        embed.add_field(name="Music NG ID", value=music_ngid, inline=True)
-        embed.add_field(name="Type", value=type, inline=True)
-        embed.add_field(name="In-game ID", value=igid, inline=True)
-        embed.add_field(name="Masterlevel", value=masterlevel, inline=True)
-        embed.add_field(name="Recorder notes", value=recorder_notes, inline=True)
-        embed.add_field(name="Recorder name", value=registrator, inline=True)
+        embed.add_field(name="Creator", value=creator.global_name, inline=False)
+        embed.add_field(name="Name", value=name, inline=False)
+        embed.add_field(name="Length", value=length, inline=False)
+        embed.add_field(name="Youtube link", value=f"[Open in browser]({yt})" if yt else None, inline=False)
+        embed.add_field(name="Music name", value=music_name, inline=False)
+        embed.add_field(name="Music artist", value=music_artist, inline=False)
+        embed.add_field(name="Music NG ID", value=music_ngid, inline=False)
+        embed.add_field(name="Type", value=type, inline=False)
+        embed.add_field(name="In-game ID", value=igid, inline=False)
+        embed.add_field(name="Masterlevel", value=masterlevel, inline=False)
+        embed.add_field(name="Recorder notes", value=recorder_notes, inline=False)
+        embed.add_field(name="Recorder name", value=registrator, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.set_footer(text="Gameplay Database")
 
+        args_list = [f"{opt['name']}={opt['value']}" for opt in interaction.data.get("options", [])]
+        applogger.debug(f"{interaction.user.name} used {interaction.command.name} within the following args: {args_list}")
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="add_collab", description="Adds directly a collab and its info into the database (prior confirmation)")
-    @discord.app_commands.describe(hostname="Collab host")
+    @discord.app_commands.describe(host="Collab host (discord mention expected)")
     @discord.app_commands.describe(name="Name of the collab")
     @discord.app_commands.describe(builders_number="Number of builders that participated in the collab")
     @discord.app_commands.describe(length="Length of the collab")
@@ -119,7 +121,7 @@ class RegistrationCog(commands.Cog):
     async def add_collab(
         self, 
         interaction: discord.Interaction, 
-        hostname: str, 
+        host: discord.User, 
         name: str, 
         builders_number: int, 
         length: str, 
@@ -132,7 +134,7 @@ class RegistrationCog(commands.Cog):
 
         registrator = interaction.user.name
         await database.database_queue.put((database.register_collab,
-                                            (hostname, name, builders_number, length, yt, music_name, music_artist, music_ngid, igid, registrator, recorder_notes,),
+                                            (host, name, builders_number, length, yt, music_name, music_artist, music_ngid, igid, registrator, recorder_notes,),
                                               {}))
 
         embed = discord.Embed(
@@ -141,21 +143,23 @@ class RegistrationCog(commands.Cog):
             color=discord.Color.dark_grey()
         )
 
-        embed.add_field(name="Host", value=hostname, inline=True)
-        embed.add_field(name="Name", value=name, inline=True)
-        embed.add_field(name="Builders number", value=builders_number, inline=True)
-        embed.add_field(name="Length", value=length, inline=True)
-        embed.add_field(name="Youtube link", value=f"[Open in browser]({yt})" if yt else None, inline=True)
-        embed.add_field(name="Music name", value=music_name, inline=True)
-        embed.add_field(name="Music artist", value=music_artist, inline=True)
-        embed.add_field(name="Music NG ID", value=music_ngid, inline=True)
-        embed.add_field(name="In-game ID", value=igid, inline=True)
-        embed.add_field(name="Recorder notes", value=recorder_notes, inline=True)
-        embed.add_field(name="Recorder name", value=registrator, inline=True)
+        embed.add_field(name="Host", value=host, inline=False)
+        embed.add_field(name="Name", value=name, inline=False)
+        embed.add_field(name="Builders number", value=builders_number, inline=False)
+        embed.add_field(name="Length", value=length, inline=False)
+        embed.add_field(name="Youtube link", value=f"[Open in browser]({yt})" if yt else None, inline=False)
+        embed.add_field(name="Music name", value=music_name, inline=False)
+        embed.add_field(name="Music artist", value=music_artist, inline=False)
+        embed.add_field(name="Music NG ID", value=music_ngid, inline=False)
+        embed.add_field(name="In-game ID", value=igid, inline=False)
+        embed.add_field(name="Recorder notes", value=recorder_notes, inline=False)
+        embed.add_field(name="Recorder name", value=registrator, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.set_footer(text="Gameplay Database")
 
+        args_list = [f"{opt['name']}={opt['value']}" for opt in interaction.data.get("options", [])]
+        applogger.debug(f"{interaction.user.name} used {interaction.command.name} within the following args: {args_list}")
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="add_music", description="Adds directly a music track and its info into the database (prior confirmation)")
@@ -187,22 +191,24 @@ class RegistrationCog(commands.Cog):
         embed = discord.Embed(
             title="Registration (mod action)",
             description="Music successfully registered",
-            color=discord.Color.dark_gold()
+            color=discord.Color.dark_grey()
         )
 
-        embed.add_field(name="Name", value=name, inline=True)
-        embed.add_field(name="Artist", value=artist, inline=True)
-        embed.add_field(name="Length", value=length, inline=True)
-        embed.add_field(name="Type", value=type, inline=True)
-        embed.add_field(name="Youtube link", value=f"[Open in browser]({yt})" if yt else "None", inline=True)
-        embed.add_field(name="SoundCloud link", value=f"[Open in browser]({soundcloud})" if soundcloud else "None", inline=True)
-        embed.add_field(name="Newgrounds ID", value=ngid, inline=True)
-        embed.add_field(name="Recorder notes", value=recorder_notes, inline=True)
-        embed.add_field(name="Recorder name", value=registrator, inline=True)
+        embed.add_field(name="Name", value=name, inline=False)
+        embed.add_field(name="Artist", value=artist, inline=False)
+        embed.add_field(name="Length", value=length, inline=False)
+        embed.add_field(name="Type", value=type, inline=False)
+        embed.add_field(name="Youtube link", value=f"[Open in browser]({yt})" if yt else "None", inline=False)
+        embed.add_field(name="SoundCloud link", value=f"[Open in browser]({soundcloud})" if soundcloud else "None", inline=False)
+        embed.add_field(name="Newgrounds ID", value=ngid, inline=False)
+        embed.add_field(name="Recorder notes", value=recorder_notes, inline=False)
+        embed.add_field(name="Recorder name", value=registrator, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.set_footer(text="Gameplay Database")
 
+        args_list = [f"{opt['name']}={opt['value']}" for opt in interaction.data.get("options", [])]
+        applogger.debug(f"{interaction.user.name} used {interaction.command.name} within the following args: {args_list}")
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="add_artist", description="Adds directly an artist and its info into the database (prior confirmation)")
@@ -227,20 +233,22 @@ class RegistrationCog(commands.Cog):
         embed = discord.Embed(
             title="Registration (mod action)",
             description="Artist successfully registered",
-            color=discord.Color.dark_blue()
+            color=discord.Color.dark_grey()
         )
 
-        embed.add_field(name="Name", value=name, inline=True)
-        embed.add_field(name="Youtube link", value=f"[Open in browser]({yt})" if yt else "None", inline=True)
-        embed.add_field(name="Soundcloud link", value=f"[Open in browser]({soundcloud})" if soundcloud else "None", inline=True)
-        embed.add_field(name="Songs registered", value=0, inline=True)
-        embed.add_field(name="Total song uses", value=0, inline=True)
-        embed.add_field(name="Recorder notes", value=recorder_notes, inline=True)
-        embed.add_field(name="Recorder name", value=registrator, inline=True)
+        embed.add_field(name="Name", value=name, inline=False)
+        embed.add_field(name="Youtube link", value=f"[Open in browser]({yt})" if yt else "None", inline=False)
+        embed.add_field(name="Soundcloud link", value=f"[Open in browser]({soundcloud})" if soundcloud else "None", inline=False)
+        embed.add_field(name="Songs registered", value=0, inline=False)
+        embed.add_field(name="Total song uses", value=0, inline=False)
+        embed.add_field(name="Recorder notes", value=recorder_notes, inline=False)
+        embed.add_field(name="Recorder name", value=registrator, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.set_footer(text="Gameplay Database")
 
+        args_list = [f"{opt['name']}={opt['value']}" for opt in interaction.data.get("options", [])]
+        applogger.debug(f"{interaction.user.name} used {interaction.command.name} within the following args: {args_list}")
         await interaction.response.send_message(embed=embed)
 
 
