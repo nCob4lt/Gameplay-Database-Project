@@ -43,10 +43,10 @@ class RegistrationCog(commands.Cog):
         embed.add_field(name="Youtube", value=f"[Open in browser]({yt})" if yt else None, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
-        embed.set_footer(text="Gameplay Database")
+        embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar)
 
-        args_list = [f"{opt['name']}={opt['value']}" for opt in interaction.data.get("options", [])]
-        applogger.debug(f"{interaction.user.name} used {interaction.command.name} within the following args: {args_list}")
+        applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="add_layout", description="Adds directly a layout and its info into the database (prior confirmation)")
@@ -101,10 +101,10 @@ class RegistrationCog(commands.Cog):
         embed.add_field(name="Recorder name", value=registrator, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
-        embed.set_footer(text="Gameplay Database")
+        embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar)
 
-        args_list = [f"{opt['name']}={opt['value']}" for opt in interaction.data.get("options", [])]
-        applogger.debug(f"{interaction.user.name} used {interaction.command.name} within the following args: {args_list}")
+        applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="add_collab", description="Adds directly a collab and its info into the database (prior confirmation)")
@@ -134,7 +134,7 @@ class RegistrationCog(commands.Cog):
 
         registrator = interaction.user.name
         await database.database_queue.put((database.register_collab,
-                                            (host, name, builders_number, length, yt, music_name, music_artist, music_ngid, igid, registrator, recorder_notes,),
+                                            (host.global_name, name, builders_number, length, yt, music_name, music_artist, music_ngid, igid, registrator, recorder_notes,),
                                               {}))
 
         embed = discord.Embed(
@@ -156,10 +156,10 @@ class RegistrationCog(commands.Cog):
         embed.add_field(name="Recorder name", value=registrator, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
-        embed.set_footer(text="Gameplay Database")
+        embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar)
 
-        args_list = [f"{opt['name']}={opt['value']}" for opt in interaction.data.get("options", [])]
-        applogger.debug(f"{interaction.user.name} used {interaction.command.name} within the following args: {args_list}")
+        applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="add_music", description="Adds directly a music track and its info into the database (prior confirmation)")
@@ -205,10 +205,10 @@ class RegistrationCog(commands.Cog):
         embed.add_field(name="Recorder name", value=registrator, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
-        embed.set_footer(text="Gameplay Database")
+        embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar)
 
-        args_list = [f"{opt['name']}={opt['value']}" for opt in interaction.data.get("options", [])]
-        applogger.debug(f"{interaction.user.name} used {interaction.command.name} within the following args: {args_list}")
+        applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="add_artist", description="Adds directly an artist and its info into the database (prior confirmation)")
@@ -245,10 +245,10 @@ class RegistrationCog(commands.Cog):
         embed.add_field(name="Recorder name", value=registrator, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
-        embed.set_footer(text="Gameplay Database")
+        embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar)
 
-        args_list = [f"{opt['name']}={opt['value']}" for opt in interaction.data.get("options", [])]
-        applogger.debug(f"{interaction.user.name} used {interaction.command.name} within the following args: {args_list}")
+        applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
 

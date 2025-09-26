@@ -1,17 +1,17 @@
 from datetime import datetime
 from pathlib import Path
+import discord
 
 class AppLogger:
 
     def __init__(self, log_file: str = None):
 
         if log_file is None:
-            # __file__ = chemin de ce fichier logger
             log_file = Path(__file__).parent.parent / "logs" / "latest.log"
 
         log_file = Path(log_file)
-        log_file.parent.mkdir(parents=True, exist_ok=True)  # crée le dossier si nécessaire
-        log_file.touch(exist_ok=True)  # crée le fichier s'il n'existe pas
+        log_file.parent.mkdir(parents=True, exist_ok=True)  
+        log_file.touch(exist_ok=True)  
 
         self.log_file = log_file
 
@@ -32,5 +32,9 @@ class AppLogger:
 
     def debug(self, message: str):
         self._write("DEBUG", message)
+
+    def debug_command(self, interaction: discord.Interaction):
+        args_list = [f"{opt['name']}={opt['value']}" for opt in interaction.data.get("options", [])]
+        self.debug(f"{interaction.user.name} used {interaction.command.name} within the following args: {args_list}")
 
         

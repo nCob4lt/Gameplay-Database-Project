@@ -1,6 +1,7 @@
 import re
+from urllib.parse import urlparse, parse_qs
 
-class DatabaseUtilities:
+class Tools:
 
     @staticmethod
     def parse_duration(duration: str) -> int:
@@ -35,5 +36,23 @@ class DatabaseUtilities:
     @staticmethod
     def time_adder(*durations: str) -> str:
         """ Ajoute des durées au format str"""
-        total_secs = sum(DatabaseUtilities.parse_duration(d) for d in durations)
-        return DatabaseUtilities.format_duration(total_secs)
+        total_secs = sum(Tools.parse_duration(d) for d in durations)
+        return Tools.format_duration(total_secs)
+    
+    @staticmethod
+    def get_youtube_id(url):
+
+        if "youtu.be" in url:
+            return url.split("/")[-1]
+        
+        query = urlparse(url)
+        if query.hostname in ["www.youtube.com", "youtube.com"]:
+            qs = parse_qs(query.query)
+            return qs.get("v", [None])[0]
+
+    @staticmethod  
+    def get_youtube_thumbnail(url):
+        video_id = Tools.get_youtube_id(url)
+        if video_id:
+            return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
+        return None

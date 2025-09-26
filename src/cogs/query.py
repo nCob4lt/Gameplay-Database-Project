@@ -1,38 +1,50 @@
 import discord
 from discord.ext import commands
+from utilities.applogger import AppLogger
+from utilities.tools import Tools
 
 import database
+
+applogger = AppLogger()
 
 class QueryCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     @discord.app_commands.command(name="get_creator_by_name", description="Retrieves data about a creator by giving name")
-    @discord.app_commands.describe(username="Creator username")
-    async def get_creator_by_name(self, interaction: discord.Interaction, username: str):
+    @discord.app_commands.describe(user="Creator username (discord)")
+    async def get_creator_by_name(self, interaction: discord.Interaction, user: discord.User):
         
-        get = database.get_creator_by_name(username)
+        get = database.get_creator_by_name(user.global_name)
+        creator = get[0]
         if not get:
             await interaction.response.send_message("**User** not found.")
             return
 
         embed = discord.Embed(
-            title=f"Creator overview : {get[0][1]}",
-            description="Infos -------------------------------------------------------------------",
+            title=f"Creator overview : {creator['username']}",
+            description="Infos",
             color=discord.Color.dark_grey()
         )
 
-        embed.add_field(name="Username", value=get[0][1], inline=False)
-        embed.add_field(name="Nationality", value=get[0][2], inline=False)
-        embed.add_field(name="Discord", value=get[0][3], inline=False)
-        embed.add_field(name="Discord uid", value=get[0][4], inline=False)
-        embed.add_field(name="Youtube", value=f"[Open in browser]({get[0][5]})" if get[0][5] else None, inline=False)
-        embed.add_field(name="Layouts registered", value=get[0][6], inline=False)
-        embed.add_field(name="Collab participations", value=get[0][7], inline=False)
-        embed.add_field(name="Total time built", value=get[0][8], inline=False)
-        embed.add_field(name="Registration date", value=get[0][9], inline=False)
-        embed.add_field(name="Recorder name", value=get[0][10], inline=False)
+        embed.add_field(name="Creator ID (database)", value=creator["id"], inline=False)
+        embed.add_field(name="Username", value=creator["username"], inline=False)
+        embed.add_field(name="Nationality", value=creator["nationality"], inline=False)
+        embed.add_field(name="Discord", value=creator["discord"], inline=False)
+        embed.add_field(name="Discord user ID", value=creator["discord_uid"], inline=False)
+        embed.add_field(name="Youtube", value=f"[Open in browser]({creator['yt']})" if creator['yt'] else None, inline=False)
+        embed.add_field(name="Layouts registered", value=creator["layouts_registered"], inline=False)
+        embed.add_field(name="Collab participations", value=creator["collab_participations"], inline=False)
+        embed.add_field(name="Total time built", value=creator["total_time_built"], inline=False)
+        embed.add_field(name="Registration date", value=creator["registration_date"], inline=False)
+        embed.add_field(name="Recorder name", value=creator["recorder_name"], inline=False)
 
+        embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar)
+
+        embed.set_image(url=user.avatar)
+
+        applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="get_layout_by_name", description="Retrieves data about a layout by giving name")
@@ -40,31 +52,41 @@ class QueryCog(commands.Cog):
     async def get_layout_by_name(self, interaction: discord.Interaction, name: str):
 
         get = database.get_layout_by_name(name)
+        layout = get[0]
         if not get:
             await interaction.response.send_message("**Layout** not found.")
             return
 
         embed = discord.Embed(
-            title=f"Layout overview : {get[0][4]}",
-            description="Infos -------------------------------------------------------------------",
+            title=f"Layout overview : {layout['name']}",
+            description="Infos",
             color=discord.Color.dark_grey()
         )
 
-        embed.add_field(name="Creator", value=get[0][2], inline=False)
-        embed.add_field(name="Name", value=get[0][4], inline=False)
-        embed.add_field(name="Type", value=get[0][3], inline=False)
-        embed.add_field(name="Length", value=get[0][5], inline=False)
-        embed.add_field(name="Youtube", value=f"[Open in browser]({get[0][6]})" if get[0][6] else None, inline=False)
-        embed.add_field(name="Music NG ID", value=get[0][8], inline=False)
-        embed.add_field(name="Music name", value=get[0][9], inline=False)
-        embed.add_field(name="Music artist", value=get[0][10], inline=False)
-        embed.add_field(name="In-game ID", value=get[0][11], inline=False)
-        embed.add_field(name="Masterlevel", value=get[0][16], inline=False)
-        embed.add_field(name="Registration date", value=get[0][12], inline=False)
-        embed.add_field(name="Recorder name", value=get[0][13], inline=False)
-        embed.add_field(name="Recorder notes", value=get[0][14], inline=False)
-        
+        embed.add_field(name="Layout ID (database)", value=layout["id"])
+        embed.add_field(name="Creator ID (database)", value=layout["creator_id"])
+        embed.add_field(name="Creator", value=layout["creator_name"], inline=False)
+        embed.add_field(name="Name", value=layout["name"], inline=False)
+        embed.add_field(name="Type", value=layout["type"], inline=False)
+        embed.add_field(name="Length", value=layout["length"], inline=False)
+        embed.add_field(name="Youtube", value=f"[Open in browser]({layout['yt']})" if layout['yt'] else None, inline=False)
+        embed.add_field(name="Music ID (database)", value=layout["music_id"], inline=False)
+        embed.add_field(name="Music NG ID", value=layout["music_ngid"], inline=False)
+        embed.add_field(name="Music name", value=layout["music_name"], inline=False)
+        embed.add_field(name="Artist ID (database)", value=layout["artist_id"])
+        embed.add_field(name="Music artist", value=layout["music_artist"], inline=False)
+        embed.add_field(name="In-game ID", value=layout["igid"], inline=False)
+        embed.add_field(name="Masterlevel", value=layout["masterlevel"], inline=False)
+        embed.add_field(name="Registration date", value=layout["registration_date"], inline=False)
+        embed.add_field(name="Recorder name", value=layout["recorder_name"], inline=False)
+        embed.add_field(name="Recorder notes", value=layout["recorder_notes"], inline=False)
 
+        embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar)
+
+        embed.set_image(url=Tools.get_youtube_thumbnail(layout["yt"]))
+        
+        applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="get_collab_by_name", description="Retrieves data about a collab by giving name")
@@ -72,29 +94,39 @@ class QueryCog(commands.Cog):
     async def get_collab_by_name(self, interaction: discord.Interaction, name: str):
 
         get = database.get_collab_by_name(name)
+        collab = get[0]
         if not get:
             await interaction.response.send_message("**Collab** not found.")
             return
 
         embed = discord.Embed(
-            title=f"Collab overview : {get[0][3]}",
-            description="Infos -------------------------------------------------------------------",
+            title=f"Collab overview : {collab['name']}",
+            description="Infos",
             color=discord.Color.dark_teal()
         )
 
-        embed.add_field(name="Host", value=get[0][2], inline=False)
-        embed.add_field(name="Name", value=get[0][3], inline=False)
-        embed.add_field(name="Builders number", value=get[0][4], inline=False)
-        embed.add_field(name="Length", value=get[0][5], inline=False)
-        embed.add_field(name="Youtube", value=f"[Open in browser]({get[0][6]})" if get[0][6] else None, inline=False)
-        embed.add_field(name="Music NG ID", value=get[0][8], inline=False)
-        embed.add_field(name="Music name", value=get[0][9], inline=False)
-        embed.add_field(name="Music artist", value=get[0][10], inline=False)
-        embed.add_field(name="In-game ID", value=get[0][11], inline=False)
-        embed.add_field(name="Registration date", value=get[0][12], inline=False)
-        embed.add_field(name="Recorder name", value=get[0][13], inline=False)
-        embed.add_field(name="Recorder notes", value=get[0][14], inline=False)
+        embed.add_field(name="Collab ID (database)", value=collab["id"], inline=False)
+        embed.add_field(name="Host ID (database)", value=collab["host_id"], inline=False)
+        embed.add_field(name="Host", value=collab["host_name"], inline=False)
+        embed.add_field(name="Name", value=collab["name"], inline=False)
+        embed.add_field(name="Builders number", value=collab["builders_number"], inline=False)
+        embed.add_field(name="Length", value=collab["length"], inline=False)
+        embed.add_field(name="Youtube", value=f"[Open in browser]({collab['yt']})" if collab['yt'] else None, inline=False)
+        embed.add_field(name="Music ID (database)", value=collab["music_id"], inline=False)
+        embed.add_field(name="Music NG ID", value=collab["music_ngid"], inline=False)
+        embed.add_field(name="Music name", value=collab["music_name"], inline=False)
+        embed.add_field(name="Music artist", value=collab["music_artist"], inline=False)
+        embed.add_field(name="In-game ID", value=collab["igid"], inline=False)
+        embed.add_field(name="Registration date", value=collab["registration_date"], inline=False)
+        embed.add_field(name="Recorder name", value=collab["recorder_name"], inline=False)
+        embed.add_field(name="Recorder notes", value=collab["recorder_notes"], inline=False)
 
+        embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar)
+
+        embed.set_image(url=Tools.get_youtube_thumbnail(collab["yt"]))
+
+        applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="get_music_by_name", description="Retrieves data about a music by giving name")
@@ -102,28 +134,35 @@ class QueryCog(commands.Cog):
     async def get_music_by_name(self, interaction: discord.Interaction, name: str):
 
         get = database.get_music_by_name(name)
+        music = get[0]
         if not get:
             await interaction.response.send_message("**Music** not found.")
             return
 
         embed = discord.Embed(
-            title=f"Music overview : {get[0][1]}",
-            description="Infos -------------------------------------------------------------------",
+            title=f"Music overview : {music['name']}",
+            description="Infos",
             color=discord.Color.dark_gold()
         )
 
-        embed.add_field(name="Name", value=get[0][1], inline=False)
-        embed.add_field(name="Artist", value=get[0][2], inline=False)
-        embed.add_field(name="Length", value=get[0][3], inline=False)
-        embed.add_field(name="Type", value=get[0][4], inline=False)
-        embed.add_field(name="Youtube", value=f"[Open in browser]({get[0][5]})" if get[0][5] else None, inline=False)
-        embed.add_field(name="SoundCloud", value=f"[Open in browser]({get[0][6]})" if get[0][6] else None, inline=False)
-        embed.add_field(name="Uses", value=get[0][7], inline=False)
-        embed.add_field(name="NG ID", value=get[0][8], inline=False)
-        embed.add_field(name="Registration date", value=get[0][9], inline=False)
-        embed.add_field(name="Recorder name", value=get[0][10], inline=False)
-        embed.add_field(name="Recorder notes", value=get[0][11], inline=False)
+        embed.add_field(name="Music ID (database)", value=music["id"], inline=False)
+        embed.add_field(name="Name", value=music["name"], inline=False)
+        embed.add_field(name="Artist ID", value=music["artist_id"], inline=False)
+        embed.add_field(name="Artist", value=music["artist"], inline=False)
+        embed.add_field(name="Length", value=music["length"], inline=False)
+        embed.add_field(name="Type", value=music["type"], inline=False)
+        embed.add_field(name="Youtube", value=f"[Open in browser]({music['yt']})" if music['yt'] else None, inline=False)
+        embed.add_field(name="SoundCloud", value=f"[Open in browser]({music['soundcloud']})" if music["soundcloud"] else None, inline=False)
+        embed.add_field(name="Uses", value=music["uses"], inline=False)
+        embed.add_field(name="Newgrounds ID", value=music["ngid"], inline=False)
+        embed.add_field(name="Registration date", value=music["registration_date"], inline=False)
+        embed.add_field(name="Recorder name", value=music["recorder_name"], inline=False)
+        embed.add_field(name="Recorder notes", value=music["recorder_notes"], inline=False)
 
+        embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar)
+        
+        applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="get_artist_by_name", description="Retrieves data about an artist by giving name")
@@ -131,25 +170,31 @@ class QueryCog(commands.Cog):
     async def get_artist_by_name(self, interaction: discord.Interaction, name: str):
 
         get = database.get_artist_by_name(name)
+        artist = get[0]
         if not get:
             await interaction.response.send_message("**Artist** not found.")
             return
 
         embed = discord.Embed(
-            title=f"Artist overview : {get[0][1]}",
-            description="Infos -------------------------------------------------------------------",
+            title=f"Artist overview : {artist['name']}",
+            description="Infos",
             color=discord.Color.dark_blue()
         )
 
-        embed.add_field(name="Name", value=get[0][1], inline=False)
-        embed.add_field(name="Youtube", value=f"[Open in browser]({get[0][2]})" if get[0][2] else None, inline=False)
-        embed.add_field(name="Soundcloud", value=f"[Open in browser]({get[0][3]})" if get[0][3] else None, inline=False)
-        embed.add_field(name="Songs registered", value=get[0][4], inline=False)
-        embed.add_field(name="Total song uses", value=get[0][5], inline=False)
-        embed.add_field(name="Registration date", value=get[0][6], inline=False)
-        embed.add_field(name="Recorder name", value=get[0][7], inline=False)
-        embed.add_field(name="Recorder notes", value=get[0][8], inline=False)
+        embed.add_field(name="Artist ID", value=artist["id"], inline=False)
+        embed.add_field(name="Name", value=artist["name"], inline=False)
+        embed.add_field(name="Youtube", value=f"[Open in browser]({artist['yt']})" if artist["yt"] else None, inline=False)
+        embed.add_field(name="Soundcloud", value=f"[Open in browser]({artist['soundcloud']})" if artist["soundcloud"] else None, inline=False)
+        embed.add_field(name="Songs registered", value=artist["songs_registered"], inline=False)
+        embed.add_field(name="Total song uses", value=artist["total_song_uses"], inline=False)
+        embed.add_field(name="Registration date", value=artist["registration_date"], inline=False)
+        embed.add_field(name="Recorder name", value=artist["recorder_name"], inline=False)
+        embed.add_field(name="Recorder notes", value=artist["recorder_notes"], inline=False)
 
+        embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar)
+
+        applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
 
