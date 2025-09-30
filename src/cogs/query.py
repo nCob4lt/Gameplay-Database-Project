@@ -16,10 +16,11 @@ class QueryCog(commands.Cog):
     async def get_creator_by_name(self, interaction: discord.Interaction, user: discord.User):
         
         get = database.get_creator_by_name(user.global_name)
-        creator = get[0]
         if not get:
             await interaction.response.send_message("**User** not found.")
+            applogger.debug(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
+        creator = get[0]
 
         embed = discord.Embed(
             title=f"Creator overview : {creator['username']}",
@@ -52,10 +53,12 @@ class QueryCog(commands.Cog):
     async def get_layout_by_name(self, interaction: discord.Interaction, name: str):
 
         get = database.get_layout_by_name(name)
-        layout = get[0]
+        
         if not get:
             await interaction.response.send_message("**Layout** not found.")
+            applogger.debug(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
+        layout = get[0]
 
         embed = discord.Embed(
             title=f"Layout overview : {layout['name']}",
@@ -94,10 +97,12 @@ class QueryCog(commands.Cog):
     async def get_collab_by_name(self, interaction: discord.Interaction, name: str):
 
         get = database.get_collab_by_name(name)
-        collab = get[0]
+        
         if not get:
             await interaction.response.send_message("**Collab** not found.")
+            applogger.debug(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
+        collab = get[0]
 
         embed = discord.Embed(
             title=f"Collab overview : {collab['name']}",
@@ -134,10 +139,12 @@ class QueryCog(commands.Cog):
     async def get_music_by_name(self, interaction: discord.Interaction, name: str):
 
         get = database.get_music_by_name(name)
-        music = get[0]
+        
         if not get:
             await interaction.response.send_message("**Music** not found.")
+            applogger.debug(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
+        music = get[0]
 
         embed = discord.Embed(
             title=f"Music overview : {music['name']}",
@@ -170,10 +177,12 @@ class QueryCog(commands.Cog):
     async def get_artist_by_name(self, interaction: discord.Interaction, name: str):
 
         get = database.get_artist_by_name(name)
-        artist = get[0]
+        
         if not get:
             await interaction.response.send_message("**Artist** not found.")
+            applogger.debug(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
+        artist = get[0]
 
         embed = discord.Embed(
             title=f"Artist overview : {artist['name']}",
