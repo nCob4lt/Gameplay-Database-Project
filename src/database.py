@@ -314,7 +314,7 @@ def synchronize_data():
         if context_music:
             cursor.execute(''' UPDATE collab SET music_id = ? WHERE id = ?; ''', (context_music[0][0], id,))
 
-    cursor.execute(''' SELECT id, name FROM music WHERE artist_id IS NULL; ''')
+    cursor.execute(''' SELECT id, artist FROM music WHERE artist_id IS NULL; ''')
     musics = cursor.fetchall()
 
     for id, artist in musics:

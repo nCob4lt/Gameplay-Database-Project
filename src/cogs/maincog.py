@@ -31,7 +31,7 @@ class MainCog(commands.Cog):
 
         self.bot.loop.create_task(database.database_worker())
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=5)
     async def sync(self):
         await database.database_queue.put((database.synchronize_data, (), {}))
 
