@@ -18,7 +18,7 @@ class QueryCog(commands.Cog):
         get = database.get_creator_by_name(user.global_name)
         if not get:
             await interaction.response.send_message("**User** not found.")
-            applogger.debug(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
         creator = get[0]
 
@@ -56,7 +56,7 @@ class QueryCog(commands.Cog):
         
         if not get:
             await interaction.response.send_message("**Layout** not found.")
-            applogger.debug(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
         layout = get[0]
 
@@ -100,7 +100,7 @@ class QueryCog(commands.Cog):
         
         if not get:
             await interaction.response.send_message("**Collab** not found.")
-            applogger.debug(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
         collab = get[0]
 
@@ -110,8 +110,8 @@ class QueryCog(commands.Cog):
             color=discord.Color.dark_teal()
         )
 
-        embed.add_field(name="Collab ID (database)", value=collab["id"], inline=False)
-        embed.add_field(name="Host ID (database)", value=collab["host_id"], inline=False)
+        embed.add_field(name="Collab ID (database)", value=collab["id"])
+        embed.add_field(name="Host ID (database)", value=collab["host_id"])
         embed.add_field(name="Host", value=collab["host_name"], inline=False)
         embed.add_field(name="Name", value=collab["name"], inline=False)
         embed.add_field(name="Builders number", value=collab["builders_number"], inline=False)
@@ -142,14 +142,14 @@ class QueryCog(commands.Cog):
         
         if not get:
             await interaction.response.send_message("**Music** not found.")
-            applogger.debug(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
         music = get[0]
 
         embed = discord.Embed(
             title=f"Music overview : {music['name']}",
             description="Infos",
-            color=discord.Color.dark_gold()
+            color=discord.Color.dark_grey()
         )
 
         embed.add_field(name="Music ID (database)", value=music["id"], inline=False)
@@ -180,14 +180,14 @@ class QueryCog(commands.Cog):
         
         if not get:
             await interaction.response.send_message("**Artist** not found.")
-            applogger.debug(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
         artist = get[0]
 
         embed = discord.Embed(
             title=f"Artist overview : {artist['name']}",
             description="Infos",
-            color=discord.Color.dark_blue()
+            color=discord.Color.dark_grey()
         )
 
         embed.add_field(name="Artist ID", value=artist["id"], inline=False)
