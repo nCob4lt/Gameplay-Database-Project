@@ -1,8 +1,9 @@
 import re
 import requests
 from urllib.parse import urlparse, parse_qs
+import os
 
-YOUTUBE_API_KEY = "AIzaSyCcgzdpbeZPVU-SWlHoe1sOgqz06lApcpY"
+YOUTUBE_API_KEY = os.getenv("GPDB_YT_API_KEY")
 
 class Tools:
 
