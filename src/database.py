@@ -85,7 +85,7 @@ def initialize():
                    FOREIGN KEY (music_id) REFERENCES music(id));''')
     
     cursor.execute(''' CREATE TABLE IF NOT EXISTS music (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                   name TEXT NOT NULL UNIQUE,
+                   name TEXT NOT NULL,
                    artist TEXT,
                    length TEXT,
                    type TEXT,

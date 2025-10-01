@@ -1,5 +1,8 @@
 import re
+import requests
 from urllib.parse import urlparse, parse_qs
+
+YOUTUBE_API_KEY = "AIzaSyCcgzdpbeZPVU-SWlHoe1sOgqz06lApcpY"
 
 class Tools:
 
@@ -56,3 +59,38 @@ class Tools:
         if video_id:
             return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
         return None
+    
+    @staticmethod
+    def get_yt_channel_id(url: str):
+
+        parsed = urlparse(url)
+        path_parts = parsed.path.strip("/").split("/")
+
+        if "channel" in path_parts:
+            return path_parts[-1]
+
+        elif "user" in path_parts:
+            username = path_parts[-1]
+            api_url = f"https://www.googleapis.com/youtube/v3/channels?part=id&forUsername={username}&key={YOUTUBE_API_KEY}"
+            r = requests.get(api_url).json()
+            items = r.get("items", [])
+            if items:
+                return items[0]["id"]
+
+        elif "c" in path_parts:
+            custom_name = path_parts[-1]
+            api_url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q={custom_name}&key={YOUTUBE_API_KEY}"
+            r = requests.get(api_url).json()
+            items = r.get("items", [])
+            if items:
+                return items[0]["snippet"]["channelId"]
+
+        return None
+    
+    @staticmethod
+    def get_youtube_pp(channel_id: str):
+        channel_api = f"https://www.googleapis.com/youtube/v3/channels?part=snippet&id={channel_id}&key={YOUTUBE_API_KEY}"
+        channel_data = requests.get(channel_api).json()
+        avatar_url = channel_data["items"][0]["snippet"]["thumbnails"]["high"]["url"]
+        return avatar_url
+        
