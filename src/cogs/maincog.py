@@ -1,6 +1,3 @@
-from datetime import datetime
-import io
-import sqlite3
 import discord
 from discord.ext import commands, tasks
 import database

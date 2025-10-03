@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from utilities.applogger import AppLogger
-from utilities.tools import Tools
+from utilities import tools
 
 import database
 
@@ -87,7 +87,7 @@ class QueryCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
 
-        embed.set_image(url=Tools.get_youtube_thumbnail(layout["yt"]))
+        embed.set_image(url=tools.get_youtube_thumbnail(layout["yt"]))
         
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
@@ -129,7 +129,7 @@ class QueryCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
 
-        embed.set_image(url=Tools.get_youtube_thumbnail(collab["yt"]))
+        embed.set_image(url=tools.get_youtube_thumbnail(collab["yt"]))
 
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
@@ -169,7 +169,7 @@ class QueryCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
 
-        embed.set_image(url=Tools.get_youtube_thumbnail(music["yt"]))
+        embed.set_image(url=tools.get_youtube_thumbnail(music["yt"]))
         
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
@@ -205,8 +205,8 @@ class QueryCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
 
-        channel_api_id = Tools.get_yt_channel_id(artist['yt'])
-        ytpp_url = Tools.get_youtube_pp(channel_api_id)
+        channel_api_id = tools.get_yt_channel_id(artist['yt'])
+        ytpp_url = tools.get_youtube_pp(channel_api_id)
 
         embed.set_image(url=ytpp_url)
 

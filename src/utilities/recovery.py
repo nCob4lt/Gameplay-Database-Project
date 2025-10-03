@@ -1,7 +1,6 @@
 from pathlib import Path
 import sqlite3
 import io
-import os
 import database
 from datetime import datetime
 from utilities.applogger import AppLogger
