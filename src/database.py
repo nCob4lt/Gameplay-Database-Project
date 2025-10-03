@@ -2,7 +2,7 @@ import sqlite3
 from datetime import datetime
 import asyncio
 
-from utilities.tools import Tools
+from utilities import tools
 from utilities.applogger import AppLogger
 
 database_queue = asyncio.Queue()
@@ -341,7 +341,7 @@ def synchronize_data():
 
         cursor.execute('''UPDATE creator SET collab_participations = ? WHERE id = ?; ''', (len(clbuser), creator[0],))
 
-        total_time = Tools.time_adder(*(layout[5] for layout in creators_layouts))
+        total_time = tools.time_adder(*(layout[5] for layout in creators_layouts))
         cursor.execute(''' UPDATE creator SET total_time_built = ? WHERE id = ?; ''', (total_time, creator[0],))
 
     # --- MUSIC TABLE

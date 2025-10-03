@@ -1,9 +1,16 @@
+from functools import wraps
 import re
 import requests
 from urllib.parse import urlparse, parse_qs
 import os
+import discord
+import json
+from pathlib import Path
+from exceptions.custom_exceptions import *
+from utilities.applogger import AppLogger
 
 YOUTUBE_API_KEY = os.getenv("GPDB_YT_API_KEY")
+applogger = AppLogger()
 
 def parse_duration(duration: str) -> int:
     """ Durée type '1h3min2s' -> secondes """
@@ -90,8 +97,14 @@ def get_youtube_pp(channel_id: str):
     avatar_url = channel_data["items"][0]["snippet"]["thumbnails"]["high"]["url"]
     return avatar_url
 
-def mod_only(f):
-    def wrapper():
-        f()
-    return wrapper
+@staticmethod
+async def check_mod(interaction: discord.Interaction):
+    json_file = Path(__file__).parent.parent / "mod/mod_whitelist.json"
+    with open(json_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    if interaction.user.id not in data.get("mods", []):
+        await interaction.response.send_message("You aren't authorized", ephemeral=True)
+        applogger.error(f" Unauthorized user {interaction.user.name} tried to use mod command {interaction.command.name} (user was not found in the whitelist)")
+        raise DataNotFound("Interaction user was not found in the mod whitelist")
+
         

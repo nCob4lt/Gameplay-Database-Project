@@ -4,6 +4,10 @@ import sqlite3
 
 import database
 from utilities.applogger import AppLogger
+from utilities import tools
+import json
+from pathlib import Path
+from exceptions.custom_exceptions import DataNotFound
 
 connection = sqlite3.connect("gpdb.db")
 c = connection.cursor()
@@ -26,6 +30,8 @@ class RegistrationCog(commands.Cog):
     @discord.app_commands.describe(yt="Youtube link to their channel (leave blank if none)")
     async def add_creator(self, interaction: discord.Interaction, user: discord.User, nationality: str, yt: str = None):
 
+        await tools.check_mod(interaction)
+            
         registrator = interaction.user.name
         await database.database_queue.put((database.register_creator,
                                             (user.global_name, nationality, user.name, user.id, yt, registrator,),
@@ -75,6 +81,8 @@ class RegistrationCog(commands.Cog):
         igid: int = None,
         masterlevel: str = None,
         recorder_notes: str = None):
+
+        await tools.check_mod(interaction)
         
         registrator = interaction.user.name
         await database.database_queue.put((database.register_layout,
@@ -132,6 +140,8 @@ class RegistrationCog(commands.Cog):
         igid: int = None, 
         recorder_notes: str = None):
 
+        await tools.check_mod(interaction)
+
         registrator = interaction.user.name
         await database.database_queue.put((database.register_collab,
                                             (host.global_name, name, builders_number, length, yt, music_name, music_artist, music_ngid, igid, registrator, recorder_notes,),
@@ -181,8 +191,10 @@ class RegistrationCog(commands.Cog):
         yt: str = None,
         soundcloud: str = None,
         ngid: int = None,
-        recorder_notes: str = None
-    ):
+        recorder_notes: str = None):
+        
+        await tools.check_mod(interaction)
+
         registrator = interaction.user.name
         await database.database_queue.put((database.register_music,
                                             (name, artist, length, type, yt, soundcloud, ngid, registrator, recorder_notes,),
@@ -222,8 +234,10 @@ class RegistrationCog(commands.Cog):
         name: str,
         yt: str = None,
         soundcloud: str = None,
-        recorder_notes: str = None
-    ):
+        recorder_notes: str = None):
+
+        await tools.check_mod(interaction)
+        
         registrator = interaction.user.name
 
         await database.database_queue.put((database.register_artist,
