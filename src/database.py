@@ -162,7 +162,7 @@ def initialize():
                    recorder_name TEXT,
                    recorder_notes TEXT);''')
     
-    cursor.execute(''' CREATE TABLE IF NOT EXISTS requestartist (id INTEGER PRIMARY KEY AUTOOINCREMENT,
+    cursor.execute(''' CREATE TABLE IF NOT EXISTS requestartist (id INTEGER PRIMARY KEY AUTOINCREMENT,
                    name TEXT NOT NULL UNIQUE,
                    yt TEXT,
                    soundcloud TEXT,
