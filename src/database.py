@@ -31,6 +31,8 @@ cursor.execute("PRAGMA foreign_keys = ON;")
 
 def initialize():
 
+    # OFFICIAL TABLES
+
     cursor.execute(''' CREATE TABLE IF NOT EXISTS creator (id INTEGER PRIMARY KEY AUTOINCREMENT,
                    username TEXT NOT NULL,
                    nationality TEXT,
@@ -105,6 +107,65 @@ def initialize():
                    soundcloud TEXT,
                    songs_registered INTEGER DEFAULT 0,
                    total_song_uses INTEGER DEFAULT 0,
+                   registration_date TEXT,
+                   recorder_name TEXT,
+                   recorder_notes TEXT)''')
+    
+    # REQUESTS TABLES
+
+    cursor.execute(''' CREATE TABLE IF NOT EXISTS requestcreator (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   username TEXT NOT NULL,
+                   nationality TEXT,
+                   discord TEXT UNIQUE,
+                   yt TEXT,
+                   registration_date TEXT,
+                   recorder_name TEXT);''')
+    
+    cursor.execute(''' CREATE TABLE IF NOT EXISTS requestlayout (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   creator_name TEXT,
+                   type TEXT,
+                   name TEXT NOT NULL,
+                   length TEXT,
+                   yt TEXT,            
+                   music_ngid INTEGER,
+                   music_name TEXT,
+                   music_artist TEXT,
+                   igid INTEGER,
+                   registration_date TEXT,
+                   recorder_name TEXT,
+                   recorder_notes TEXT,
+                   masterlevel TEXT DEFAULT NULL);''')
+    
+    cursor.execute(''' CREATE TABLE IF NOT EXISTS requestcollab (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   host_name TEXT,
+                   name TEXT,
+                   builders_number TEXT,
+                   length TEXT,
+                   yt TEXT,
+                   music_ngid INTEGER,
+                   music_name TEXT,
+                   music_artist TEXT,
+                   igid INTEGER,
+                   registration_date TEXT,
+                   recorder_name TEXT,
+                   recorder_notes TEXT);''')
+    
+    cursor.execute(''' CREATE TABLE IF NOT EXISTS requestmusic (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   name TEXT NOT NULL,
+                   artist TEXT,
+                   length TEXT,
+                   type TEXT,
+                   yt TEXT,
+                   soundcloud TEXT,
+                   ngid INTEGER,
+                   registration_date TEXT,
+                   recorder_name TEXT,
+                   recorder_notes TEXT);''')
+    
+    cursor.execute(''' CREATE TABLE IF NOT EXISTS requestartist (id INTEGER PRIMARY KEY AUTOOINCREMENT,
+                   name TEXT NOT NULL UNIQUE,
+                   yt TEXT,
+                   soundcloud TEXT,
                    registration_date TEXT,
                    recorder_name TEXT,
                    recorder_notes TEXT)''')
@@ -385,6 +446,6 @@ def synchronize_data():
 
 def execute_queries(queries):
 
-    sql_script = "".join(queries)  # reconstitue tout le script
+    sql_script = "".join(queries)
     cursor.executescript(sql_script)
     connection.commit()
