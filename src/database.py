@@ -285,6 +285,107 @@ def register_artist(name, yt, soundcloud, registrator, recorder_notes):
     
     connection.commit()
 
+def register_request_creator(username, nationality, discord_uname, yt, registrator):
+
+    dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+    cursor.execute('''INSERT INTO requestcreator (
+                        username,
+                        nationality,
+                        discord,
+                        yt,
+                        registration_date,
+                        recorder_name
+                      ) VALUES (?,?,?,?,?,?);''',
+                   (username, nationality, discord_uname, yt, dt, registrator))
+    
+    connection.commit()
+
+
+def register_request_layout(creator_name, type_, name, length, yt, music_ngid, music_name, music_artist, igid, masterlevel, recorder_notes, registrator):
+    
+    dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+    cursor.execute('''INSERT INTO requestlayout (
+                        creator_name,
+                        type,
+                        name,
+                        length,
+                        yt,
+                        music_ngid,
+                        music_name,
+                        music_artist,
+                        igid,
+                        registration_date,
+                        recorder_name,
+                        recorder_notes,
+                        masterlevel
+                      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);''',
+                   (creator_name, type_, name, length, yt, music_ngid, music_name, music_artist, igid, dt, registrator, recorder_notes, masterlevel))
+    
+    connection.commit()
+
+
+def register_request_collab(host_name, name, builders_number, length, yt, music_ngid, music_name, music_artist, igid, recorder_notes, registrator):
+
+    dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+    cursor.execute('''INSERT INTO requestcollab (
+                        host_name,
+                        name,
+                        builders_number,
+                        length,
+                        yt,
+                        music_ngid,
+                        music_name,
+                        music_artist,
+                        igid,
+                        registration_date,
+                        recorder_name,
+                        recorder_notes
+                      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?);''',
+                   (host_name, name, builders_number, length, yt, music_ngid, music_name, music_artist, igid, dt, registrator, recorder_notes))
+    
+    connection.commit()
+
+
+def register_request_music(name, artist, length, type_, yt, soundcloud, ngid, recorder_notes, registrator):
+
+    dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+    cursor.execute('''INSERT INTO requestmusic (
+                        name,
+                        artist,
+                        length,
+                        type,
+                        yt,
+                        soundcloud,
+                        ngid,
+                        registration_date,
+                        recorder_name,
+                        recorder_notes
+                      ) VALUES (?,?,?,?,?,?,?,?,?,?);''',
+                   (name, artist, length, type_, yt, soundcloud, ngid, dt, registrator, recorder_notes))
+    
+    connection.commit()
+
+
+def register_request_artist(name, yt, soundcloud, recorder_notes, registrator):
+
+    dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+    cursor.execute('''INSERT INTO requestartist (
+                        name,
+                        yt,
+                        soundcloud,
+                        registration_date,
+                        recorder_name,
+                        recorder_notes
+                      ) VALUES (?,?,?,?,?,?);''',
+                   (name, yt, soundcloud, dt, registrator, recorder_notes))
+    
+    connection.commit()
+
 
 def get_creator_by_name(username):
 
