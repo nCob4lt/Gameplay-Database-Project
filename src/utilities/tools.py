@@ -99,12 +99,12 @@ def get_youtube_pp(channel_id: str):
 
 @staticmethod
 async def check_mod(interaction: discord.Interaction):
-    json_file = Path(__file__).parent.parent / "mod/mod_whitelist.json"
+    json_file = Path(__file__).parent.parent.parent / "mod/mod_whitelist.json"
     with open(json_file, "r", encoding="utf-8") as f:
         data = json.load(f)
     if interaction.user.id not in data.get("mods", []):
         await interaction.response.send_message("You aren't authorized", ephemeral=True)
         applogger.error(f" Unauthorized user {interaction.user.name} tried to use mod command {interaction.command.name} (user was not found in the whitelist)")
-        raise DataNotFound("Interaction user was not found in the mod whitelist")
+        raise MissingModPermissions("Interaction user was not found in the mod whitelist")
 
         

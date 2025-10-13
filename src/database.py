@@ -4,6 +4,7 @@ import asyncio
 
 from utilities import tools
 from utilities.applogger import AppLogger
+from exceptions.custom_exceptions import DataNotFound
 
 database_queue = asyncio.Queue()
 database_lock = asyncio.Lock()
@@ -388,29 +389,43 @@ def register_request_artist(name, yt, soundcloud, recorder_notes, registrator):
 
 
 def get_creator_by_name(username):
-
     cursor.execute('''SELECT * FROM creator WHERE username = ?;''', (username,))
-    return cursor.fetchall()
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No creator found with username '{username}'")
+    return result
 
 
 def get_layout_by_name(layout_name):
     cursor.execute('''SELECT * FROM layout WHERE name = ?;''', (layout_name,))
-    return cursor.fetchall()
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No layout found with name '{layout_name}'")
+    return result
 
 
 def get_collab_by_name(collab_name):
     cursor.execute('''SELECT * FROM collab WHERE name = ?;''', (collab_name,))
-    return cursor.fetchall()
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No collab found with name '{collab_name}'")
+    return result
 
 
 def get_music_by_name(music_name):
     cursor.execute('''SELECT * FROM music WHERE name = ?;''', (music_name,))
-    return cursor.fetchall()
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No music found with name '{music_name}'")
+    return result
 
 
 def get_artist_by_name(artist_name):
     cursor.execute('''SELECT * FROM artist WHERE name = ?;''', (artist_name,))
-    return cursor.fetchall()
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No artist found with name '{artist_name}'")
+    return result
 
 
 def get_creators():

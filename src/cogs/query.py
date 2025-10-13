@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from utilities.applogger import AppLogger
 from utilities import tools
+from exceptions.custom_exceptions import DataNotFound
 
 import database
 
@@ -15,11 +16,13 @@ class QueryCog(commands.Cog):
     @discord.app_commands.describe(user="Creator username (discord)")
     async def get_creator_by_name(self, interaction: discord.Interaction, user: discord.User):
         
-        get = database.get_creator_by_name(user.global_name)
-        if not get:
+        try:
+            get = database.get_creator_by_name(user.global_name)
+        except DataNotFound:
             await interaction.response.send_message("**User** not found.")
             applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
+        
         creator = get[0]
 
         embed = discord.Embed(

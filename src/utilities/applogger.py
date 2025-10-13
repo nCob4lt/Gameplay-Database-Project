@@ -9,7 +9,7 @@ class AppLogger:
     def __init__(self, log_file: str = None):
 
         if log_file is None:
-            log_file = Path(__file__).parent.parent / "logs" / "latest.log"
+            log_file = Path(__file__).parent.parent.parent / "logs" / "latest.log"
 
         log_file = Path(log_file)
         log_file.parent.mkdir(parents=True, exist_ok=True)  
