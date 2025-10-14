@@ -1,16 +1,52 @@
+"""
+
+File: database.py
+Description: Contains a collection of methods which allows the application to interact with the database
+
+This module handles all interactions with the SQLite database for the Gameplay Database bot.
+It provides:
+
+- Initialization of tables (official + request tables)
+- Registration functions for creators, layouts, collabs, music, and artists
+- Retrieval functions for single or multiple records
+- Database synchronization functions to keep IDs and counts updated
+- An asynchronous worker for queued database operations with locking
+
+Author: cobalt
+
+"""
+
+# --- Standard imports ---
 import sqlite3
 from datetime import datetime
 import asyncio
 
+# --- Local imports ---
 from utilities import tools
 from utilities.applogger import AppLogger
 from exceptions.custom_exceptions import DataNotFound
 
+# --- Async database queue and lock ---
 database_queue = asyncio.Queue()
 database_lock = asyncio.Lock()
+
+# --- Application logger ---
 applogger = AppLogger()
 
 async def database_worker():
+
+    """
+
+    Background worker for executing database operations asynchronously.
+
+    Pulls tasks from the `database_queue` and executes them in a thread-safe
+    manner using `database_lock` to prevent concurrent writes.
+
+    Each task is a tuple of (function, args, kwargs). Supports both
+    coroutine functions and regular functions.
+
+    """
+
     while True:
         function, args, kwargs = await database_queue.get()
         try:
@@ -24,16 +60,27 @@ async def database_worker():
         finally:
             database_queue.task_done()
 
+
+# --- Database connection ---
 connection = sqlite3.connect("gpdb.db")
 connection.row_factory = sqlite3.Row
 cursor = connection.cursor()
 cursor.execute("PRAGMA foreign_keys = ON;")
 
+# -------------------- DATABASE INITIALIZATION --------------------
 
 def initialize():
 
-    # OFFICIAL TABLES
+    """
 
+    Initializes the database by creating all required tables if they do not exist.
+
+    Includes both official tables (creator, layout, collab, music, artist) and
+    request tables (requestcreator, requestlayout, requestcollab, requestmusic, requestartist).
+
+    """
+
+    # --- Official tables ---
     cursor.execute(''' CREATE TABLE IF NOT EXISTS creator (id INTEGER PRIMARY KEY AUTOINCREMENT,
                    username TEXT NOT NULL,
                    nationality TEXT,
@@ -175,6 +222,15 @@ def initialize():
 
 def clear():
 
+    """
+
+    Drops all official tables and resets the SQLite autoincrement sequence.
+
+    This is useful for resetting the database during development or testing.
+    Foreign key checks are temporarily disabled during the drop operation.
+
+    """
+
     cursor.execute("PRAGMA foreign_keys = OFF;")
     
     cursor.execute("DROP TABLE IF EXISTS creator;")
@@ -187,8 +243,31 @@ def clear():
 
     connection.commit()
     cursor.execute("PRAGMA foreign_keys = ON;")
+
+# -------------------- REGISTRATION FUNCTIONS --------------------
    
 def register_creator(username, nationality, discord_uname, discord_uid, yt, registrator):
+
+    """
+
+    Registers a new creator in the database.
+
+    Parameters
+    ----------
+    username : str
+        Name of the creator.
+    nationality : str
+        Nationality of the creator.
+    discord_uname : str
+        Discord username of the creator.
+    discord_uid : str
+        Discord user ID.
+    yt : str
+        YouTube link.
+    registrator : str
+        Name of the person recording the entry.
+
+    """
 
     dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -203,6 +282,8 @@ def register_creator(username, nationality, discord_uname, discord_uid, yt, regi
     
     connection.commit()
 
+# --- Similarly, other registration functions (register_layout, register_collab, etc.) follow
+# Each function inserts a record into its respective table and commits the transaction.
 
 def register_layout(creator, name, length, yt, music_name, music_artist, music_ngid, type, igid, masterlevel, recorder_notes, registrator):
 
@@ -387,14 +468,27 @@ def register_request_artist(name, yt, soundcloud, recorder_notes, registrator):
     
     connection.commit()
 
+# -------------------- RETRIEVAL FUNCTIONS --------------------
 
 def get_creator_by_name(username):
+    """
+
+    Retrieves a creator by username.
+
+    Raises
+    ------
+    DataNotFound
+        If no creator exists with the given username.
+
+    """
     cursor.execute('''SELECT * FROM creator WHERE username = ?;''', (username,))
     result = cursor.fetchall()
     if not result:
         raise DataNotFound(f"No creator found with username '{username}'")
     return result
 
+# --- Similarly, get_layout_by_name, get_collab_by_name, get_music_by_name, get_artist_by_name ---
+# All raise DataNotFound if no result is found.
 
 def get_layout_by_name(layout_name):
     cursor.execute('''SELECT * FROM layout WHERE name = ?;''', (layout_name,))
@@ -429,9 +523,13 @@ def get_artist_by_name(artist_name):
 
 
 def get_creators():
+
+    """Returns all creators as a list of rows."""
+
     cursor.execute(''' SELECT * FROM creator; ''')
     return cursor.fetchall()
 
+# --- Similarly, get_layouts, get_collabs, get_musics, get_artists ---
 
 def get_layouts():
     cursor.execute(''' SELECT * FROM layout; ''')
@@ -454,8 +552,19 @@ def get_artists():
 
 
 def synchronize_data():
+
+    """
+
+    Updates IDs and counts across tables:
+
+    - Sets proper creator_id, artist_id, and music_id in layouts and collabs
+    - Updates layouts_registered, collab_participations, total_time_built for creators
+    - Updates 'uses' count for music
+    - Updates songs_registered and total_song_uses for artists
+
+    """
         
-    # --- UPDATE IDS (layout, collab, artist)
+    # --- Update layout, collab, and music IDs ---
 
     cursor.execute(''' SELECT id, creator_name, music_name, music_artist FROM layout WHERE creator_id IS NULL OR artist_id IS NULL OR music_id is NULL; ''')
     layouts = cursor.fetchall()
@@ -473,6 +582,8 @@ def synchronize_data():
         context_music = get_music_by_name(music_name)
         if context_music:
             cursor.execute(''' UPDATE layout SET music_id = ? WHERE id = ?; ''', (context_music[0][0], id,))
+
+    # --- Update collab table IDs similarly ---
 
     cursor.execute(''' SELECT id, host_name, music_name, music_artist FROM collab WHERE host_id IS NULL OR artist_id IS NULL OR music_id is NULL; ''')
     collabs = cursor.fetchall()
@@ -500,9 +611,7 @@ def synchronize_data():
         if context_artist:
             cursor.execute(''' UPDATE music SET artist_id = ? WHERE id = ?; ''', (context_artist[0][0], id,))
 
-    # --- CREATOR TABLE
-
-    # --- Update the amount of layouts registered, collab participations and total time built
+    # --- Update creator stats (layouts_registered, collab_participations, total_time_built) ---
 
     creators = get_creators()
 
@@ -521,9 +630,7 @@ def synchronize_data():
         total_time = tools.time_adder(*(layout[5] for layout in creators_layouts))
         cursor.execute(''' UPDATE creator SET total_time_built = ? WHERE id = ?; ''', (total_time, creator[0],))
 
-    # --- MUSIC TABLE
-
-    # --- Updates music uses
+    # --- Updates music uses ---
 
     cursor.execute(''' SELECT id FROM music; ''')
     musics = cursor.fetchall()
@@ -535,9 +642,7 @@ def synchronize_data():
         layouts_with_ctx_song = cursor.fetchall()
         cursor.execute(''' UPDATE music SET uses = ? WHERE id = ?; ''', (len(layouts_with_ctx_song), id,))
 
-    # --- ARTIST TABLE
-
-    # --- Updates songs registered count and total song uses
+    # --- Updates songs registered count and total song uses ---
 
     cursor.execute(''' SELECT id, name FROM artist; ''')
     artists = cursor.fetchall()
@@ -561,6 +666,17 @@ def synchronize_data():
 
 
 def execute_queries(queries):
+
+    """
+
+    Executes multiple SQL queries in a single script.
+
+    Parameters
+    ----------
+    queries : list[str]
+        List of SQL statements to execute.
+        
+    """
 
     sql_script = "".join(queries)
     cursor.executescript(sql_script)
