@@ -1,6 +1,7 @@
 """
 
 File: database.py
+
 Description: Contains a collection of methods which allows the application to interact with the database
 
 This module handles all interactions with the SQLite database for the Gameplay Database bot.
@@ -471,6 +472,7 @@ def register_request_artist(name, yt, soundcloud, recorder_notes, registrator):
 # -------------------- RETRIEVAL FUNCTIONS --------------------
 
 def get_creator_by_name(username):
+
     """
 
     Retrieves a creator by username.
@@ -481,6 +483,7 @@ def get_creator_by_name(username):
         If no creator exists with the given username.
 
     """
+
     cursor.execute('''SELECT * FROM creator WHERE username = ?;''', (username,))
     result = cursor.fetchall()
     if not result:

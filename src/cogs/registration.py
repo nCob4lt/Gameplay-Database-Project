@@ -1,19 +1,36 @@
+"""
+
+File: registration.py
+
+Description: This module defines the `RegistrationCog` class, a Discord cog that allows authorized moderators
+to directly insert new records (creators, layouts, collabs, music tracks, and artists) into the Gameplay Database.
+
+Each command performs the following actions:
+    - Checks moderator permissions using `tools.check_mod()`
+    - Queues an async task to the `database.database_queue` for safe, thread-safe database insertion
+    - Logs the command execution through `AppLogger`
+    - Returns a confirmation embed to the moderator within Discord
+
+All database operations are asynchronous and rely on the global worker queue defined in `database.py`.
+
+Author: cobalt
+
+"""
+
+# --- Standard imports ---
 import discord
 from discord.ext import commands
 import sqlite3
 
+# --- Local imports ---
 import database
 from utilities.applogger import AppLogger
 from utilities import tools
-import json
-from pathlib import Path
-from exceptions.custom_exceptions import DataNotFound
 
+# --- Initialization section ---
 connection = sqlite3.connect("gpdb.db")
 c = connection.cursor()
-
 database.initialize()
-
 connection.commit()
 connection.close()
 
@@ -21,7 +38,24 @@ applogger = AppLogger()
 
 class RegistrationCog(commands.Cog):
 
+    """
+
+    A Discord Cog providing moderator-only commands to directly register new data entries.
+
+    This cog allows moderators to add new creators, layouts, collaborations, music tracks, and artists
+    into the database without needing a manual approval process.
+
+    Attributes
+    ----------
+    bot : commands.Bot
+        The Discord bot instance associated with this cog.
+
+    """
+
     def __init__(self, bot: commands.Bot) -> None:
+
+        """Initialize the RegistrationCog with a reference to the bot."""
+
         self.bot = bot
 
     @discord.app_commands.command(name="add_creator", description="Adds directly a creator and its info into the database (prior confirmation)")
@@ -29,6 +63,23 @@ class RegistrationCog(commands.Cog):
     @discord.app_commands.describe(nationality="Creator nationality (prior confirmation)")
     @discord.app_commands.describe(yt="Youtube link to their channel (leave blank if none)")
     async def add_creator(self, interaction: discord.Interaction, user: discord.User, nationality: str, yt: str = None):
+
+        """
+
+        Add a new creator entry to the database.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The Discord interaction representing the slash command invocation.
+        user : discord.User
+            The creator's Discord user object.
+        nationality : str
+            The creator's nationality.
+        yt : str, optional
+            A YouTube channel link (if available).
+
+        """
 
         await tools.check_mod(interaction)
             
@@ -81,6 +132,14 @@ class RegistrationCog(commands.Cog):
         igid: int = None,
         masterlevel: str = None,
         recorder_notes: str = None):
+
+        """
+
+        Add a layout entry to the database.
+
+        This command registers a new gameplay layout and links it with its creator, music, and metadata.
+
+        """
 
         await tools.check_mod(interaction)
         
@@ -140,6 +199,14 @@ class RegistrationCog(commands.Cog):
         igid: int = None, 
         recorder_notes: str = None):
 
+        """
+
+        Add a collaboration entry to the database.
+
+        A collab represents a level created by multiple builders, typically hosted by a single creator.
+
+        """
+
         await tools.check_mod(interaction)
 
         registrator = interaction.user.name
@@ -192,6 +259,14 @@ class RegistrationCog(commands.Cog):
         soundcloud: str = None,
         ngid: int = None,
         recorder_notes: str = None):
+
+        """
+
+        Add a music track entry to the database.
+
+        Stores information about a music track used in levels or collabs, including metadata and sources.
+
+        """
         
         await tools.check_mod(interaction)
 
@@ -235,6 +310,14 @@ class RegistrationCog(commands.Cog):
         yt: str = None,
         soundcloud: str = None,
         recorder_notes: str = None):
+
+        """
+
+        Add an artist entry to the database.
+
+        Registers a new artist profile, typically associated with one or more music tracks.
+
+        """
 
         await tools.check_mod(interaction)
         

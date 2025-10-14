@@ -1,20 +1,76 @@
+"""
+
+File: query.py
+
+Description: This module defines the `QueryCog` class, a Discord cog responsible for querying and retrieving
+data stored in the Gameplay Database. It allows users (typically moderators or verified members)
+to search for specific entries by name or Discord user and view their details in an embedded format.
+
+The cog includes commands to fetch:
+    - Creator profiles
+    - Layouts
+    - Collabs
+    - Music tracks
+    - Artists
+
+Each command:
+    - Queries the database via helper methods in the `database` module
+    - Handles the `DataNotFound` exception if no match is found
+    - Logs all interactions and potential issues through the `AppLogger`
+    - Returns a styled Discord embed containing detailed information
+
+Author: cobalt
+
+"""
+
+# --- Standard imports ---
 import discord
 from discord.ext import commands
+
+# --- Local imports ---
 from utilities.applogger import AppLogger
 from utilities import tools
 from exceptions.custom_exceptions import DataNotFound
-
 import database
 
+# --- Application logger ---
 applogger = AppLogger()
 
 class QueryCog(commands.Cog):
+
+    """
+
+    A Discord Cog providing data retrieval commands for querying the Gameplay Database.
+
+    This cog allows users to retrieve data about creators, layouts, collabs, music tracks,
+    and artists. Each command formats and displays the retrieved data inside a rich
+    Discord embed for readability.
+
+    Attributes
+    ----------
+    bot : commands.Bot
+        The main Discord bot instance associated with this cog.
+
+    """
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     @discord.app_commands.command(name="get_creator_by_name", description="Retrieves data about a creator by giving name")
     @discord.app_commands.describe(user="Creator username (discord)")
     async def get_creator_by_name(self, interaction: discord.Interaction, user: discord.User):
+
+        """
+
+        Retrieve and display a creator's information by Discord username.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The Discord interaction context for this command.
+        user : discord.User
+            The Discord user object of the creator.
+
+        """
         
         try:
             get = database.get_creator_by_name(user.global_name)
@@ -55,12 +111,19 @@ class QueryCog(commands.Cog):
     @discord.app_commands.describe(name="Layout name")
     async def get_layout_by_name(self, interaction: discord.Interaction, name: str):
 
-        get = database.get_layout_by_name(name)
-        
-        if not get:
-            await interaction.response.send_message("**Layout** not found.")
+        """
+
+        Retrieve and display layout information by layout name.
+
+        """
+
+        try:
+            get = database.get_layout_by_name(name)
+        except DataNotFound:
+            await interaction.response.send_message("**User** not found.")
             applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
+
         layout = get[0]
 
         embed = discord.Embed(
@@ -99,12 +162,19 @@ class QueryCog(commands.Cog):
     @discord.app_commands.describe(name="Collab name")
     async def get_collab_by_name(self, interaction: discord.Interaction, name: str):
 
-        get = database.get_collab_by_name(name)
-        
-        if not get:
+        """
+
+        Retrieve and display collab information by collab name.
+
+        """
+
+        try:
+            get = database.get_collab_by_name(name)
+        except DataNotFound:
             await interaction.response.send_message("**Collab** not found.")
             applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
+
         collab = get[0]
 
         embed = discord.Embed(
@@ -141,12 +211,19 @@ class QueryCog(commands.Cog):
     @discord.app_commands.describe(name="Music name")
     async def get_music_by_name(self, interaction: discord.Interaction, name: str):
 
-        get = database.get_music_by_name(name)
-        
-        if not get:
+        """
+
+        Retrieve and display a music track's information by name.
+
+        """
+
+        try:
+            get = database.get_music_by_name(name)
+        except DataNotFound:
             await interaction.response.send_message("**Music** not found.")
             applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
+        
         music = get[0]
 
         embed = discord.Embed(
@@ -181,12 +258,19 @@ class QueryCog(commands.Cog):
     @discord.app_commands.describe(name="Artist name")
     async def get_artist_by_name(self, interaction: discord.Interaction, name: str):
 
-        get = database.get_artist_by_name(name)
-        
-        if not get:
+        """
+
+        Retrieve and display an artist's information by name.
+
+        """
+
+        try:
+            get = database.get_artist_by_name(name)
+        except DataNotFound:
             await interaction.response.send_message("**Artist** not found.")
             applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
             return
+        
         artist = get[0]
 
         embed = discord.Embed(

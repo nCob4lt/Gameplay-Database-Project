@@ -1,7 +1,9 @@
 """
 
 File: main.py
+
 Description: Contains the initial instantiation of the bot class and run the Discord application
+
 Author: cobalt
 
 """
