@@ -166,6 +166,7 @@ def initialize():
                    username TEXT NOT NULL,
                    nationality TEXT,
                    discord TEXT UNIQUE,
+                   discord_uid TEXT UNIQUE,
                    yt TEXT,
                    registration_date TEXT,
                    recorder_name TEXT);''')
@@ -368,7 +369,7 @@ def register_artist(name, yt, soundcloud, registrator, recorder_notes):
     
     connection.commit()
 
-def register_request_creator(username, nationality, discord_uname, yt, registrator):
+def register_request_creator(username, nationality, discord_uname, discord_uid, yt, registrator):
 
     dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -376,11 +377,12 @@ def register_request_creator(username, nationality, discord_uname, yt, registrat
                         username,
                         nationality,
                         discord,
+                        discord_uid,
                         yt,
                         registration_date,
                         recorder_name
-                      ) VALUES (?,?,?,?,?,?);''',
-                   (username, nationality, discord_uname, yt, dt, registrator))
+                      ) VALUES (?,?,?,?,?,?,?);''',
+                   (username, nationality, discord_uname, discord_uid, yt, dt, registrator))
     
     connection.commit()
 
@@ -681,6 +683,45 @@ def execute_queries(queries):
         
     """
 
+    # --- Build the whole sql request
     sql_script = "".join(queries)
     cursor.executescript(sql_script)
+    connection.commit()
+
+def get_oldest_request():
+
+    
+    cursor.execute('''
+                   
+    SELECT 'creator' AS type, rowid AS id, registration_date FROM requestcreator
+    UNION ALL
+    SELECT 'layout', rowid, registration_date FROM requestlayout
+    UNION ALL
+    SELECT 'collab', rowid, registration_date FROM requestcollab
+    UNION ALL
+    SELECT 'music', rowid, registration_date FROM requestmusic
+    UNION ALL
+    SELECT 'artist', rowid, registration_date FROM requestartist
+    ORDER BY registration_date ASC
+    LIMIT 1;'''
+                   )
+
+    result = cursor.fetchone()
+    if not result:
+        raise DataNotFound(f"No request found")
+    return result
+
+def get_request_details(type_, id_):
+
+    table = f"request{type_}"
+    cursor.execute(f"SELECT * FROM {table} WHERE rowid = ?", (id_,))
+    result = cursor.fetchone()
+    if not result:
+        raise DataNotFound(f"No request found")
+    return result
+
+def delete_request(type_, id_):
+
+    table = f"request{type_}"
+    cursor.execute(f"DELETE FROM {table} WHERE rowid = ?", (id_,))
     connection.commit()

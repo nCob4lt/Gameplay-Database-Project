@@ -35,12 +35,12 @@ class RequestRegistrationCog(commands.Cog):
         interaction: discord.Interaction,
         user: discord.User,
         nationality: str,
-        yt: str
+        yt: str = None
         ):
 
         registrator = interaction.user.name
         await database.database_queue.put((database.register_request_creator,
-                                          (user.global_name, nationality, user.name, yt, registrator),
+                                          (user.global_name, nationality, user.name, user.id, yt, registrator),
                                           {}))
         
         embed = discord.Embed(
@@ -53,6 +53,7 @@ class RequestRegistrationCog(commands.Cog):
         embed.add_field(name="Nationality", value=nationality, inline=False)
         embed.add_field(name="Discord username", value=user.name, inline=False)
         embed.add_field(name="Youtube", value=f"[Open in browser]({yt})" if yt else None, inline=False)
+        embed.add_field(name="Recorder name", value=registrator, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
@@ -70,7 +71,7 @@ class RequestRegistrationCog(commands.Cog):
         description="Registers a suggestion entry for the layout table in the Gameplay Database"
     )
     @discord.app_commands.describe(
-        creator_name="Creator of the layout",
+        creator="Creator of the layout",
         type_="Layout type (e.g., experimental, speedcore, atmospheric, etc.)",
         name="Layout name",
         length="Length (XminYs e.g., 14s, 1min2s, 2min45s)",
@@ -85,24 +86,24 @@ class RequestRegistrationCog(commands.Cog):
     async def request_layout(
         self,
         interaction: discord.Interaction,
-        creator_name: str,
-        type_: str,
+        creator: discord.User,
         name: str,
         length: str,
         yt: str,
-        music_ngid: str,
         music_name: str,
         music_artist: str,
-        igid: str,
-        masterlevel: str,
-        recorder_notes: str
+        music_ngid: str = None,
+        type_: str = None,
+        igid: str = None,
+        masterlevel: str = None,
+        recorder_notes: str = None
     ):
         """Registers a layout request."""
         registrator = interaction.user.name
 
         await database.database_queue.put((
             database.register_request_layout,
-            (creator_name, type_, name, length, yt, music_ngid, music_name, music_artist, igid, masterlevel, recorder_notes, registrator),
+            (creator.global_name, type_, name, length, yt, music_ngid, music_name, music_artist, igid, masterlevel, recorder_notes, registrator),
             {}
         ))
 
@@ -112,7 +113,7 @@ class RequestRegistrationCog(commands.Cog):
             color=discord.Color.dark_grey()
         )
         embed.add_field(name="Name", value=name, inline=False)
-        embed.add_field(name="Creator", value=creator_name, inline=False)
+        embed.add_field(name="Creator", value=creator.global_name, inline=False)
         embed.add_field(name="Type", value=type_, inline=False)
         embed.add_field(name="Length", value=length, inline=False)
         embed.add_field(name="YouTube", value=f"[Open in browser]({yt})" if yt else "None", inline=False)
@@ -120,7 +121,8 @@ class RequestRegistrationCog(commands.Cog):
         embed.add_field(name="NG ID", value=music_ngid, inline=False)
         embed.add_field(name="In-game ID", value=igid, inline=False)
         embed.add_field(name="Masterlevel", value=masterlevel, inline=False)
-        embed.add_field(name="Notes", value=recorder_notes or "None", inline=False)
+        embed.add_field(name="Recorder name", value=registrator, inline=False)
+        embed.add_field(name="Recorder notes", value=recorder_notes or "None", inline=False)
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
@@ -156,11 +158,11 @@ class RequestRegistrationCog(commands.Cog):
         builders_number: int,
         length: str,
         yt: str,
-        music_ngid: str,
         music_name: str,
         music_artist: str,
-        igid: str,
-        recorder_notes: str
+        music_ngid: str = None,
+        igid: str = None,
+        recorder_notes: str = None
     ):
         """Registers a collab request."""
         registrator = interaction.user.name
@@ -178,13 +180,14 @@ class RequestRegistrationCog(commands.Cog):
         )
         embed.add_field(name="Name", value=name, inline=False)
         embed.add_field(name="Host", value=host_name, inline=False)
-        embed.add_field(name="Builders", value=str(builders_number), inline=False)
+        embed.add_field(name="Builders", value=builders_number, inline=False)
         embed.add_field(name="Length", value=length, inline=False)
         embed.add_field(name="YouTube", value=f"[Open in browser]({yt})" if yt else "None", inline=False)
         embed.add_field(name="Music", value=f"{music_name} by {music_artist}", inline=False)
         embed.add_field(name="NG ID", value=music_ngid, inline=False)
         embed.add_field(name="In-game ID", value=igid, inline=False)
-        embed.add_field(name="Notes", value=recorder_notes or "None", inline=False)
+        embed.add_field(name="Recorder name", value=registrator, inline=False)
+        embed.add_field(name="Recorder notes", value=recorder_notes or "None", inline=False)
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
@@ -216,11 +219,11 @@ class RequestRegistrationCog(commands.Cog):
         name: str,
         artist: str,
         length: str,
-        type_: str,
-        yt: str,
-        soundcloud: str,
-        ngid: str,
-        recorder_notes: str
+        type_: str = None,
+        yt: str = None,
+        soundcloud: str = None,
+        ngid: str = None,
+        recorder_notes: str = None
     ):
         """Registers a music request."""
         registrator = interaction.user.name
@@ -243,7 +246,8 @@ class RequestRegistrationCog(commands.Cog):
         embed.add_field(name="YouTube", value=f"[Open in browser]({yt})" if yt else "None", inline=False)
         embed.add_field(name="SoundCloud", value=f"[Open in browser]({soundcloud})" if soundcloud else "None", inline=False)
         embed.add_field(name="NG ID", value=ngid, inline=False)
-        embed.add_field(name="Notes", value=recorder_notes or "None", inline=False)
+        embed.add_field(name="Recorder notes", value=recorder_notes or "None", inline=False)
+        embed.add_field(name="Recorder name", value=registrator, inline=False)
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
@@ -269,9 +273,9 @@ class RequestRegistrationCog(commands.Cog):
         self,
         interaction: discord.Interaction,
         name: str,
-        yt: str,
-        soundcloud: str,
-        recorder_notes: str
+        yt: str = None,
+        soundcloud: str = None,
+        recorder_notes: str = None
     ):
         """Registers an artist request."""
         registrator = interaction.user.name
@@ -290,7 +294,8 @@ class RequestRegistrationCog(commands.Cog):
         embed.add_field(name="Name", value=name, inline=False)
         embed.add_field(name="YouTube", value=f"[Open in browser]({yt})" if yt else "None", inline=False)
         embed.add_field(name="SoundCloud", value=f"[Open in browser]({soundcloud})" if soundcloud else "None", inline=False)
-        embed.add_field(name="Notes", value=recorder_notes or "None", inline=False)
+        embed.add_field(name="Recorder notes", value=recorder_notes or "None", inline=False)
+        embed.add_field(name="Recorder name", value=registrator, inline=False)
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
