@@ -204,29 +204,37 @@ def get_yt_channel_id(url: str):
 
     """
 
+    if not url:
+        raise InvalidYouTubeURL("Url is none")
+
     parsed = urlparse(url)
     path_parts = parsed.path.strip("/").split("/")
 
-    if "channel" in path_parts:
-        return path_parts[-1]
+    try:
 
-    elif "user" in path_parts:
-        username = path_parts[-1]
-        api_url = f"https://www.googleapis.com/youtube/v3/channels?part=id&forUsername={username}&key={YOUTUBE_API_KEY}"
-        r = requests.get(api_url).json()
-        items = r.get("items", [])
-        if items:
-            return items[0]["id"]
+        if "channel" in path_parts:
+            return path_parts[-1]
 
-    elif "c" in path_parts:
-        custom_name = path_parts[-1]
-        api_url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q={custom_name}&key={YOUTUBE_API_KEY}"
-        r = requests.get(api_url).json()
-        items = r.get("items", [])
-        if items:
-            return items[0]["snippet"]["channelId"]
+        elif "user" in path_parts:
+            username = path_parts[-1]
+            api_url = f"https://www.googleapis.com/youtube/v3/channels?part=id&forUsername={username}&key={YOUTUBE_API_KEY}"
+            r = requests.get(api_url).json()
+            items = r.get("items", [])
+            if items:
+                return items[0]["id"]
 
-    return None
+        elif "c" in path_parts:
+            custom_name = path_parts[-1]
+            api_url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q={custom_name}&key={YOUTUBE_API_KEY}"
+            r = requests.get(api_url).json()
+            items = r.get("items", [])
+            if items:
+                return items[0]["snippet"]["channelId"]
+            
+    except requests.RequestException as e:
+         raise InvalidYouTubeURL(f"Network or API error while resolving YouTube URL: {e}")
+
+    raise InvalidYouTubeURL(f"Could not resolve YouTube channel ID for URL: {url}")
 
 def get_youtube_pp(channel_id: str):
 
@@ -245,11 +253,13 @@ def get_youtube_pp(channel_id: str):
         URL of the channel's profile image.
 
     """
-
-    channel_api = f"https://www.googleapis.com/youtube/v3/channels?part=snippet&id={channel_id}&key={YOUTUBE_API_KEY}"
-    channel_data = requests.get(channel_api).json()
-    avatar_url = channel_data["items"][0]["snippet"]["thumbnails"]["high"]["url"]
-    return avatar_url
+    try:
+        channel_api = f"https://www.googleapis.com/youtube/v3/channels?part=snippet&id={channel_id}&key={YOUTUBE_API_KEY}"
+        channel_data = requests.get(channel_api).json()
+        avatar_url = channel_data["items"][0]["snippet"]["thumbnails"]["high"]["url"]
+        return avatar_url
+    except Exception as e:
+        raise InvalidYouTubeURL(f"An error occured during the process : {e}")
 
 async def check_mod(interaction: discord.Interaction):
 

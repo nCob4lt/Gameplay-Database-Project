@@ -30,7 +30,7 @@ from discord.ext import commands
 # --- Local imports ---
 from utilities.applogger import AppLogger
 from utilities import tools
-from exceptions.custom_exceptions import DataNotFound
+from exceptions.custom_exceptions import *
 import database
 
 # --- Application logger ---
@@ -292,9 +292,14 @@ class QueryCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
 
-        channel_api_id = tools.get_yt_channel_id(artist['yt'])
-        ytpp_url = tools.get_youtube_pp(channel_api_id)
-
+        try:
+            channel_api_id = tools.get_yt_channel_id(artist['yt'])
+            ytpp_url = tools.get_youtube_pp(channel_api_id)
+        except (InvalidYouTubeURL, UnboundLocalError):
+            applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} runned by {interaction.user.name}")
+            applogger.debug_command(interaction)
+            await interaction.response.send_message(embed=embed)
+        
         embed.set_image(url=ytpp_url)
 
         applogger.debug_command(interaction)
