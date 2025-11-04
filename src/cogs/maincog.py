@@ -148,6 +148,7 @@ class MainCog(commands.Cog):
         await tools.check_mod(interaction)
         applogger.debug_command(interaction)
         recovery.load_save(filename)
+        await interaction.response.send_message("Backup **successfully** loaded.")
 
 
     

@@ -240,6 +240,11 @@ def clear():
     cursor.execute("DROP TABLE IF EXISTS collab;")
     cursor.execute("DROP TABLE IF EXISTS music;")
     cursor.execute("DROP TABLE IF EXISTS artist;")
+    cursor.execute("DROP TABLE IF EXISTS requestcreator")
+    cursor.execute("DROP TABLE IF EXISTS requestlayout")
+    cursor.execute("DROP TABLE IF EXISTS requestcollab")
+    cursor.execute("DROP TABLE IF EXISTS requestmusic")
+    cursor.execute("DROP TABLE IF EXISTS requestartist")
 
     cursor.execute("DELETE FROM sqlite_sequence;")
 
@@ -527,6 +532,20 @@ def get_artist_by_name(artist_name):
     return result
 
 
+def get_layouts_from(creator):
+    cursor.execute(''' SELECT name FROM layout WHERE creator_name = ?;''', (creator,))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No levels from '{creator}'")
+    return result
+
+def get_musics_from(artist):
+    cursor.execute(''' SELECT name FROM music WHERE artist = ?''', (artist))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No musics from '{artist}'")
+    return result
+
 def get_creators():
 
     """Returns all creators as a list of rows."""
@@ -576,17 +595,26 @@ def synchronize_data():
 
     for id, creator_name, music_name, music_artist in layouts:
 
-        context_creator = get_creator_by_name(creator_name)
-        if context_creator:
-            cursor.execute(''' UPDATE layout SET creator_id = ? WHERE id = ?; ''', (context_creator[0][0], id,))
+        try:
+            context_creator = get_creator_by_name(creator_name)
+            if context_creator:
+                cursor.execute(''' UPDATE layout SET creator_id = ? WHERE id = ?; ''', (context_creator[0][0], id,))
+        except Exception as e:
+            applogger.warning(f"[LAYOUT:{id}] Failed to update creator_id: {e}")
 
-        context_artist = get_artist_by_name(music_artist)
-        if context_artist:
-            cursor.execute(''' UPDATE layout SET artist_id = ? WHERE id = ?; ''', (context_artist[0][0], id,))
+        try:
+            context_artist = get_artist_by_name(music_artist)
+            if context_artist:
+                cursor.execute(''' UPDATE layout SET artist_id = ? WHERE id = ?; ''', (context_artist[0][0], id,))
+        except Exception as e:
+            applogger.warning(f"[LAYOUT:{id}] Failed to update artist_id: {e}")
 
-        context_music = get_music_by_name(music_name)
-        if context_music:
-            cursor.execute(''' UPDATE layout SET music_id = ? WHERE id = ?; ''', (context_music[0][0], id,))
+        try:
+            context_music = get_music_by_name(music_name)
+            if context_music:
+                cursor.execute(''' UPDATE layout SET music_id = ? WHERE id = ?; ''', (context_music[0][0], id,))
+        except Exception as e:
+            applogger.warning(f"[LAYOUT:{id}] Failed to update music_id: {e}")
 
     # --- Update collab table IDs similarly ---
 
@@ -595,26 +623,45 @@ def synchronize_data():
 
     for id, host_name, music_name, music_artist in collabs:
 
-        context_host = get_creator_by_name(host_name)
-        if context_host:
-            cursor.execute(''' UPDATE collab SET host_id = ? WHERE id = ?; ''', (context_host[0][0], id,))
+        try:
 
-        context_artist = get_artist_by_name(music_artist)
-        if context_artist:
-            cursor.execute(''' UPDATE collab SET artist_id = ? WHERE id = ?; ''', (context_artist[0][0], id,))
+            context_host = get_creator_by_name(host_name)
+            if context_host:
+                cursor.execute(''' UPDATE collab SET host_id = ? WHERE id = ?; ''', (context_host[0][0], id,))
 
-        context_music = get_music_by_name(music_name)
-        if context_music:
-            cursor.execute(''' UPDATE collab SET music_id = ? WHERE id = ?; ''', (context_music[0][0], id,))
+        except Exception as e:
+            applogger.warning(f"[COLLAB:{id}] Failed to update host_id: {e}")
+
+        try:
+
+            context_artist = get_artist_by_name(music_artist)
+            if context_artist:
+                cursor.execute(''' UPDATE collab SET artist_id = ? WHERE id = ?; ''', (context_artist[0][0], id,))
+        
+        except Exception as e:
+            applogger.warning(f"[COLLAB:{id}] Failed to update artist_id: {e}")
+
+        try:
+
+            context_music = get_music_by_name(music_name)
+            if context_music:
+                cursor.execute(''' UPDATE collab SET music_id = ? WHERE id = ?; ''', (context_music[0][0], id,))
+
+        except Exception as e:
+            applogger.warning(f"[COLLAB:{id}] Failed to update music_id: {e}")
+
 
     cursor.execute(''' SELECT id, artist FROM music WHERE artist_id IS NULL; ''')
     musics = cursor.fetchall()
 
     for id, artist in musics:
 
-        context_artist = get_artist_by_name(artist)
-        if context_artist:
-            cursor.execute(''' UPDATE music SET artist_id = ? WHERE id = ?; ''', (context_artist[0][0], id,))
+        try:
+            context_artist = get_artist_by_name(artist)
+            if context_artist:
+                cursor.execute(''' UPDATE music SET artist_id = ? WHERE id = ?; ''', (context_artist[0][0], id,))
+        except Exception as e:
+            applogger.warning(f"[MUSIC:{id}] Failed to update artist_id: {e}")
 
     # --- Update creator stats (layouts_registered, collab_participations, total_time_built) ---
 
@@ -622,18 +669,23 @@ def synchronize_data():
 
     for creator in creators:
 
-        cursor.execute(''' SELECT * FROM layout WHERE creator_id = ?; ''', (creator[0],))
-        creators_layouts = cursor.fetchall()
+        try:
 
-        cursor.execute('''UPDATE creator SET layouts_registered = ? WHERE id = ?; ''', (len(creators_layouts), creator[0],))
+            cursor.execute(''' SELECT * FROM layout WHERE creator_id = ?; ''', (creator[0],))
+            creators_layouts = cursor.fetchall()
 
-        cursor.execute(''' SELECT * FROM layout WHERE masterlevel IS NOT NULL AND creator_id = ?; ''', (creator[0],))
-        clbuser = cursor.fetchall()
+            cursor.execute('''UPDATE creator SET layouts_registered = ? WHERE id = ?; ''', (len(creators_layouts), creator[0],))
 
-        cursor.execute('''UPDATE creator SET collab_participations = ? WHERE id = ?; ''', (len(clbuser), creator[0],))
+            cursor.execute(''' SELECT * FROM layout WHERE masterlevel IS NOT NULL AND creator_id = ?; ''', (creator[0],))
+            clbuser = cursor.fetchall()
 
-        total_time = tools.time_adder(*(layout[5] for layout in creators_layouts))
-        cursor.execute(''' UPDATE creator SET total_time_built = ? WHERE id = ?; ''', (total_time, creator[0],))
+            cursor.execute('''UPDATE creator SET collab_participations = ? WHERE id = ?; ''', (len(clbuser), creator[0],))
+
+            total_time = tools.time_adder(*(layout[5] for layout in creators_layouts))
+            cursor.execute(''' UPDATE creator SET total_time_built = ? WHERE id = ?; ''', (total_time, creator[0],))
+        
+        except Exception as e:
+            applogger.warning(f"[CREATOR:{creator[0]}] Failed to update stats: {e}")
 
     # --- Updates music uses ---
 
@@ -642,10 +694,14 @@ def synchronize_data():
 
     for row in musics:
 
-        id = row[0]
-        cursor.execute(''' SELECT * FROM layout WHERE music_id = ?''', (id,))
-        layouts_with_ctx_song = cursor.fetchall()
-        cursor.execute(''' UPDATE music SET uses = ? WHERE id = ?; ''', (len(layouts_with_ctx_song), id,))
+        try:
+
+            id = row[0]
+            cursor.execute(''' SELECT * FROM layout WHERE music_id = ?''', (id,))
+            layouts_with_ctx_song = cursor.fetchall()
+            cursor.execute(''' UPDATE music SET uses = ? WHERE id = ?; ''', (len(layouts_with_ctx_song), id,))
+        except Exception as e:
+            applogger.warning(f"[MUSIC:{id}] Failed to update uses count: {e}")
 
     # --- Updates songs registered count and total song uses ---
 
@@ -654,16 +710,21 @@ def synchronize_data():
 
     for row in artists:
 
-        id = row[0]
-        cursor.execute(''' SELECT * FROM music WHERE artist_id = ?; ''', (id,))
-        songs_by_ctx_artist = cursor.fetchall()
-        cursor.execute(''' UPDATE artist SET songs_registered = ? WHERE id = ?; ''', (len(songs_by_ctx_artist), id,))
+        try:
 
-        cursor.execute(''' SELECT (SELECT count(*) FROM layout WHERE artist_id = ?) AS layout_count, (SELECT count(*) FROM collab WHERE artist_id = ?) AS collab_count; ''',
-                        (id, id,))
-        layout_count, collab_count = cursor.fetchone()
-        tt = layout_count + collab_count
-        cursor.execute(''' UPDATE artist SET total_song_uses = ? WHERE id = ?; ''', (tt, id,))
+            id = row[0]
+            cursor.execute(''' SELECT * FROM music WHERE artist_id = ?; ''', (id,))
+            songs_by_ctx_artist = cursor.fetchall()
+            cursor.execute(''' UPDATE artist SET songs_registered = ? WHERE id = ?; ''', (len(songs_by_ctx_artist), id,))
+
+            cursor.execute(''' SELECT (SELECT count(*) FROM layout WHERE artist_id = ?) AS layout_count, (SELECT count(*) FROM collab WHERE artist_id = ?) AS collab_count; ''',
+                            (id, id,))
+            layout_count, collab_count = cursor.fetchone()
+            tt = layout_count + collab_count
+            cursor.execute(''' UPDATE artist SET total_song_uses = ? WHERE id = ?; ''', (tt, id,))
+        
+        except Exception as e:
+            applogger.warning(f"[ARTIST:{id}] Failed to update stats: {e}")
     
     connection.commit()
 

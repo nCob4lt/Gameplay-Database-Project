@@ -231,6 +231,16 @@ def get_yt_channel_id(url: str):
             if items:
                 return items[0]["snippet"]["channelId"]
             
+        elif path_parts and path_parts[0].startswith("@"):
+            handle = path_parts[0].lstrip("@")
+            api_url = (
+                f"https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q={handle}&key={YOUTUBE_API_KEY}"
+            )
+            r = requests.get(api_url).json()
+            items = r.get("items", [])
+            if items:
+                return items[0]["snippet"]["channelId"]
+            
     except requests.RequestException as e:
          raise InvalidYouTubeURL(f"Network or API error while resolving YouTube URL: {e}")
 

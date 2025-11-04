@@ -153,7 +153,9 @@ class QueryCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
 
-        embed.set_image(url=tools.get_youtube_thumbnail(layout["yt"]))
+        url = tools.get_youtube_thumbnail(layout["yt"])
+        if url:
+            embed.set_image(url=url)
         
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
@@ -202,7 +204,9 @@ class QueryCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
 
-        embed.set_image(url=tools.get_youtube_thumbnail(collab["yt"]))
+        url = tools.get_youtube_thumbnail(collab["yt"])
+        if url:
+            embed.set_image(url=url)
 
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
@@ -249,7 +253,9 @@ class QueryCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
 
-        embed.set_image(url=tools.get_youtube_thumbnail(music["yt"]))
+        url = tools.get_youtube_thumbnail(music["yt"])
+        if url:
+            embed.set_image(url=url)
         
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
@@ -292,15 +298,20 @@ class QueryCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
         embed.set_thumbnail(url=self.bot.user.avatar)
 
+        ytpp_url = None 
+
         try:
             channel_api_id = tools.get_yt_channel_id(artist['yt'])
             ytpp_url = tools.get_youtube_pp(channel_api_id)
         except (InvalidYouTubeURL, UnboundLocalError):
-            applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} runned by {interaction.user.name}")
+            applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name}")
             applogger.debug_command(interaction)
-            await interaction.response.send_message(embed=embed)
+            return await interaction.response.send_message(embed=embed)
         
-        embed.set_image(url=ytpp_url)
+        if ytpp_url:
+            embed.set_image(url=ytpp_url)
+        else:
+            embed.set_footer(text="No YouTube link available", icon_url=self.bot.user.avatar)
 
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
