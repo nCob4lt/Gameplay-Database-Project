@@ -533,14 +533,14 @@ def get_artist_by_name(artist_name):
 
 
 def get_layouts_from(creator):
-    cursor.execute(''' SELECT name FROM layout WHERE creator_name = ?;''', (creator,))
+    cursor.execute(''' SELECT name, yt FROM layout WHERE creator_name = ?;''', (creator,))
     result = cursor.fetchall()
     if not result:
         raise DataNotFound(f"No levels from '{creator}'")
     return result
 
 def get_musics_from(artist):
-    cursor.execute(''' SELECT name FROM music WHERE artist = ?''', (artist))
+    cursor.execute(''' SELECT name, yt, soundcloud FROM music WHERE artist = ?''', (artist,))
     result = cursor.fetchall()
     if not result:
         raise DataNotFound(f"No musics from '{artist}'")
