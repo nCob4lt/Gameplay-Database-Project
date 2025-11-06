@@ -121,6 +121,28 @@ def time_adder(*durations: str) -> str:
     total_secs = sum(parse_duration(d) for d in durations)
     return format_duration(total_secs)
 
+async def is_valid_duration(duration: str) -> None:
+    """
+    Validates whether a duration string follows the correct format (e.g. '1h2min3s', '45s', '2min').
+
+    Parameters
+    ----------
+    duration : str
+        The duration string to validate.
+
+    Raises
+    ------
+    InvalidDurationFormat
+        If the duration string does not match the expected format.
+    """
+
+    duration = duration.strip().lower().replace(" ", "")
+
+    if not re.fullmatch(r"(\d+(h|min|s))+", duration):
+        raise InvalidDurationFormat(
+            f"Invalid duration format: '{duration}'. Example of valid format: '1h2min30s'."
+        )
+
 # -------------------- YOUTUBE UTILITIES --------------------
 
 def get_youtube_id(url):

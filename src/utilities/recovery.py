@@ -110,10 +110,12 @@ def load_save(filename):
 
     try:
         with open(file_path, "r", encoding="utf-8") as f:
-            queries = f.read()
+            sql_script = f.read()
 
         database.clear()
-        database.execute_queries(queries)
+        database.cursor.execute("PRAGMA foreign_keys = OFF;")
+        database.execute_queries(sql_script)
+        database.cursor.execute("PRAGMA foreign_keys = ON;")
         applogger.debug(f"Retrieved data from {filename}")
             
     except FileNotFoundError:

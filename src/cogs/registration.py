@@ -26,6 +26,7 @@ import sqlite3
 import database
 from utilities.applogger import AppLogger
 from utilities import tools
+from exceptions.custom_exceptions import *
 
 # --- Initialization section ---
 connection = sqlite3.connect("gpdb.db")
@@ -142,6 +143,12 @@ class RegistrationCog(commands.Cog):
         """
 
         await tools.check_mod(interaction)
+        try:
+            await tools.is_valid_duration(length)
+        except InvalidDurationFormat:
+            await interaction.response.send_message("**Invalid** duration format. Corrrect format : __**x**h**y**min**z**s__")
+            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name}")
+            return
         
         registrator = interaction.user.name
         await database.database_queue.put((database.register_layout,
@@ -208,6 +215,12 @@ class RegistrationCog(commands.Cog):
         """
 
         await tools.check_mod(interaction)
+        try:
+            await tools.is_valid_duration(length)
+        except InvalidDurationFormat:
+            await interaction.response.send_message("**Invalid** duration format. Corrrect format : __**x**h**y**min**z**s__")
+            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name}")
+            return
 
         registrator = interaction.user.name
         await database.database_queue.put((database.register_collab,
@@ -269,6 +282,12 @@ class RegistrationCog(commands.Cog):
         """
         
         await tools.check_mod(interaction)
+        try:
+            await tools.is_valid_duration(length)
+        except InvalidDurationFormat:
+            await interaction.response.send_message("**Invalid** duration format. Corrrect format : __**x**h**y**min**z**s__")
+            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name}")
+            return
 
         registrator = interaction.user.name
         await database.database_queue.put((database.register_music,

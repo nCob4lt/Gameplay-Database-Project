@@ -748,22 +748,13 @@ def synchronize_data():
     applogger.info("Database successfully synced")
 
 
-def execute_queries(queries):
-
+def execute_queries(script: str):
     """
 
-    Executes multiple SQL queries in a single script.
-
-    Parameters
-    ----------
-    queries : list[str]
-        List of SQL statements to execute.
-        
+    Executes a full SQL script.
+    
     """
-
-    # --- Build the whole sql request
-    sql_script = "".join(queries)
-    cursor.executescript(sql_script)
+    cursor.executescript(script)
     connection.commit()
 
 def get_oldest_request():

@@ -78,3 +78,14 @@ class InvalidYouTubeURL(Exception):
     def __init__(self, message):
         super().__init__(message)
         self.timestamp = datetime.now()
+
+class InvalidDurationFormat(Exception):
+    
+    """
+    
+    Raised when a duration string does not follow the expected format.
+
+    """
+    def __init__(self, message):
+        super().__init__(message)
+        self.timestamp = datetime.now()

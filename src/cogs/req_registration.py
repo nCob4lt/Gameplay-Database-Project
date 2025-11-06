@@ -3,6 +3,8 @@ from discord.ext import commands
 
 import database
 from utilities.applogger import AppLogger
+from utilities import tools
+from exceptions.custom_exceptions import *
 
 applogger = AppLogger()
 
@@ -98,7 +100,18 @@ class RequestRegistrationCog(commands.Cog):
         masterlevel: str = None,
         recorder_notes: str = None
     ):
-        """Registers a layout request."""
+        """
+
+        Registers a layout request.
+
+        """
+        try:
+            await tools.is_valid_duration(length)
+        except InvalidDurationFormat:
+            await interaction.response.send_message("**Invalid** duration format. Corrrect format : __**x**h**y**min**z**s__")
+            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name}")
+            return
+
         registrator = interaction.user.name
 
         await database.database_queue.put((
@@ -164,7 +177,18 @@ class RequestRegistrationCog(commands.Cog):
         igid: str = None,
         recorder_notes: str = None
     ):
-        """Registers a collab request."""
+        """
+
+        Registers a collab request.
+
+        """
+        try:
+            await tools.is_valid_duration(length)
+        except InvalidDurationFormat:
+            await interaction.response.send_message("**Invalid** duration format. Corrrect format : __**x**h**y**min**z**s__")
+            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name}")
+            return
+
         registrator = interaction.user.name
 
         await database.database_queue.put((
@@ -225,7 +249,19 @@ class RequestRegistrationCog(commands.Cog):
         ngid: str = None,
         recorder_notes: str = None
     ):
-        """Registers a music request."""
+        """
+
+        Registers a music request.
+
+        """
+
+        try:
+            await tools.is_valid_duration(length)
+        except InvalidDurationFormat:
+            await interaction.response.send_message("**Invalid** duration format. Corrrect format : __**x**h**y**min**z**s__")
+            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name}")
+            return
+
         registrator = interaction.user.name
 
         await database.database_queue.put((
@@ -277,7 +313,12 @@ class RequestRegistrationCog(commands.Cog):
         soundcloud: str = None,
         recorder_notes: str = None
     ):
-        """Registers an artist request."""
+        """
+
+        Registers an artist request.
+
+        """
+
         registrator = interaction.user.name
 
         await database.database_queue.put((
