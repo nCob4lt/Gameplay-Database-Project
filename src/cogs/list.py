@@ -13,8 +13,8 @@ class ListCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @discord.app_commands.command(name="levels_from", description="List the levels registered in the database from the given creator")
-    async def levels_from(self, interaction: discord.Interaction, user: discord.User):
+    @discord.app_commands.command(name="layouts_from", description="List the levels registered in the database from the given creator")
+    async def layouts_from(self, interaction: discord.Interaction, user: discord.User):
         
         try:
             get = database.get_layouts_from(user.global_name)
@@ -40,8 +40,36 @@ class ListCog(commands.Cog):
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=list_embed)
 
-            
+    @discord.app_commands.command(
+        name="collabs_from",
+        description="List the collabs registered in the database from the given host"
+    )
+    async def collabs_from(self, interaction: discord.Interaction, user: discord.User):
+        try:
+            get = database.get_collabs_from(user.global_name)
+        except DataNotFound:
+            await interaction.response.send_message(f"No **collabs** from {user.global_name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            return
+        
+        list_embed = discord.Embed(
+            title=f"Collabs hosted by {user.global_name}",
+            description=f"Total : {len(get)}",
+            color=discord.Color.dark_grey()
+        )
 
+        fullstring = ""
+        for collab in get:
+            fullstring += f"{collab['name']} | [Open in browser]({collab['yt']})\n"
+
+        list_embed.add_field(name="List", value=fullstring[:1024])
+        list_embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        list_embed.set_thumbnail(url=user.avatar)
+        
+        applogger.debug_command(interaction)
+        await interaction.response.send_message(embed=list_embed)
+
+            
     @discord.app_commands.command(
         name="musics_from",
         description="List the musics registered in the database from the given artist"
@@ -94,4 +122,55 @@ class ListCog(commands.Cog):
         applogger.debug_command(interaction)
 
         await interaction.response.send_message(embed=list_embed)
+
+    @discord.app_commands.command(
+        name="levels_from",
+        description="List every layout and collab registered in the database from the given creator"
+    )
+    async def levels_from(self, interaction: discord.Interaction, user: discord.User):
+        try:
+            get = database.get_levels_from(user.global_name)
+        except DataNotFound:
+            await interaction.response.send_message(f"No **levels** (layouts or collabs) from {user.global_name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            return
+        
+        list_embed = discord.Embed(
+            title=f"Levels from {user.global_name}",
+            description=f"Total : {len(get)}",
+            color=discord.Color.dark_grey()
+        )
+
+        layouts = [lvl for lvl in get if lvl['type'] == 'layout']
+        collabs = [lvl for lvl in get if lvl['type'] == 'collab']
+
+        # --- Layouts ---
+        if layouts:
+            layout_str = ""
+            for layout in layouts:
+                layout_str += f"{layout['name']} | [Open in browser]({layout['yt']})\n"
+            list_embed.add_field(
+                name=f"Layouts ({len(layouts)})",
+                value=layout_str[:1024],
+                inline=False
+            )
+
+        # --- Collabs ---
+        if collabs:
+            collab_str = ""
+            for collab in collabs:
+                collab_str += f"{collab['name']} | [Open in browser]({collab['yt']})\n"
+            list_embed.add_field(
+                name=f"Collabs ({len(collabs)})",
+                value=collab_str[:1024],
+                inline=False
+            )
+
+        list_embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        list_embed.set_thumbnail(url=user.avatar)
+        
+        applogger.debug_command(interaction)
+        await interaction.response.send_message(embed=list_embed)
+
+
 

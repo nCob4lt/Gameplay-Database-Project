@@ -531,9 +531,26 @@ def get_artist_by_name(artist_name):
         raise DataNotFound(f"No artist found with name '{artist_name}'")
     return result
 
-
 def get_layouts_from(creator):
     cursor.execute(''' SELECT name, yt FROM layout WHERE creator_name = ?;''', (creator,))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No levels from '{creator}'")
+    return result
+
+def get_collabs_from(creator):
+    cursor.execute(''' SELECT name, yt FROM collab WHERE host_name = ?;''', (creator,))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No collabs from '{creator}'")
+    return result
+
+def get_levels_from(creator):
+    cursor.execute('''
+        SELECT name, yt, 'layout' AS type FROM layout WHERE creator_name = ?
+        UNION ALL
+        SELECT name, yt, 'collab' AS type FROM collab WHERE host_name = ?;
+    ''', (creator, creator))
     result = cursor.fetchall()
     if not result:
         raise DataNotFound(f"No levels from '{creator}'")

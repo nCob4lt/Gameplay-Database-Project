@@ -182,7 +182,7 @@ class QueryCog(commands.Cog):
         embed = discord.Embed(
             title=f"Collab overview : {collab['name']}",
             description="Infos",
-            color=discord.Color.dark_teal()
+            color=discord.Color.dark_grey()
         )
 
         embed.add_field(name="Collab ID (database)", value=collab["id"])
