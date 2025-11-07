@@ -656,6 +656,87 @@ def get_levels_with_artist(artist):
         raise DataNotFound(f"No levels with songs from following artist: {artist}")
     return result
 
+def get_parts_from(creator_name):
+    """
+    Retrieves all collaboration parts (layouts) built by a specific creator.
+
+    A "part" is defined as a layout entry that belongs to a collaboration,
+    i.e., where the 'masterlevel' field is NOT NULL.
+
+    Parameters
+    ----------
+    creator_name : str
+        The name of the creator to search for.
+
+    Returns
+    -------
+    list[dict]
+        List of layouts representing the creator's parts in collaborations.
+        Each entry includes:
+            - name (str): The layout's name
+            - yt (str): YouTube link
+            - masterlevel (str): The main collaboration name
+
+    Raises
+    ------
+    DataNotFound
+        If the creator has no recorded parts in collaborations.
+    """
+    cursor.execute(
+        '''
+        SELECT name, yt, masterlevel
+        FROM layout
+        WHERE creator_name = ? AND masterlevel IS NOT NULL;
+        ''',
+        (creator_name,)
+    )
+    result = cursor.fetchall()
+
+    if not result:
+        raise DataNotFound(f"No collab parts found for {creator_name}")
+
+    return result
+
+def get_parts_of(collab_name):
+    """
+    Retrieves all parts (layouts) belonging to a specific collab.
+
+    Parameters
+    ----------
+    collab_name : str
+        The name of the collab.
+
+    Returns
+    -------
+    tuple[list[tuple[str, str, str]], int]
+        - A list of tuples (name, yt, creator_name) representing each part.
+        - The total expected number of builders for the collab (builders_number).
+
+    Raises
+    ------
+    DataNotFound
+        If the collab does not exist or no parts are found.
+    """
+
+    cursor.execute("SELECT builders_number FROM collab WHERE name = ?", (collab_name,))
+    collab_data = cursor.fetchone()
+    if not collab_data:
+        raise DataNotFound(f"No collab found with name '{collab_name}'")
+
+    builders_number = int(collab_data[0]) if collab_data[0] else 0
+
+
+    cursor.execute(
+        "SELECT name, yt, creator_name FROM layout WHERE masterlevel = ?",
+        (collab_name,)
+    )
+    result = cursor.fetchall()
+
+    if not result:
+        raise DataNotFound(f"No parts found for collab '{collab_name}'")
+
+    return result, builders_number
+
 
 def get_creators():
 

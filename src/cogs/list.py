@@ -69,6 +69,37 @@ class ListCog(commands.Cog):
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=list_embed)
 
+    @discord.app_commands.command(
+    name="parts_from",
+    description="List all collab parts built by the given creator"
+    )
+    async def parts_from(self, interaction: discord.Interaction, user: discord.User):
+
+        try:
+            get = database.get_parts_from(user.global_name)
+        except DataNotFound:
+            await interaction.response.send_message(f"No **collab parts** from {user.global_name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            return
+
+        list_embed = discord.Embed(
+            title=f"Collab parts built by {user.global_name}",
+            description=f"Total : {len(get)}",
+            color=discord.Color.dark_grey()
+        )
+
+        fullstring = ""
+        for part in get:
+            master = part["masterlevel"] if part["masterlevel"] else "Unknown collab"
+            fullstring += f"**{part['name']}** *(from {master})* | [Open in browser]({part['yt']})\n"
+
+        list_embed.add_field(name="List", value=fullstring[:1024])
+        list_embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        list_embed.set_thumbnail(url=user.avatar)
+
+        applogger.debug_command(interaction)
+        await interaction.response.send_message(embed=list_embed)
+
             
     @discord.app_commands.command(
         name="musics_from",
@@ -356,7 +387,7 @@ class ListCog(commands.Cog):
                 if url:
                     list_embed.set_image(url=url)
             except DataNotFound:
-                applogger.error(f"Could not load yt thumbnail for music : {name} on {interaction.command.name}")
+                applogger.error(f"Could not load yt thumbnail for music : {name} on {interaction.command.name} ran by {interaction.user.name}")
 
         elif choice.value == "artist":
             ytpp_url = None 
@@ -381,6 +412,67 @@ class ListCog(commands.Cog):
         
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=list_embed)
+
+
+    @discord.app_commands.command(
+        name="parts_of",
+        description="List the parts registered in the database that belong to a specific collab"
+    )
+    async def parts_of(self, interaction: discord.Interaction, collab_name: str):
+        try:
+            parts, total_builders = database.get_parts_of(collab_name)
+        except DataNotFound:
+            await interaction.response.send_message(f"No **parts** found for collab `{collab_name}`.")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            return
+
+        registered_parts = len(parts)
+
+        list_embed = discord.Embed(
+            title=f"Parts of {collab_name}",
+            description=f"Total registered: {registered_parts}/{total_builders}",
+            color=discord.Color.dark_grey()
+        )
+
+        try:
+            getcollab = database.get_collab_by_name(collab_name)
+            url = tools.get_youtube_thumbnail(getcollab[0]["yt"])
+            if url:
+                list_embed.set_image(url=url)
+        except DataNotFound:
+            applogger.error(f"Couldn't get yt thumbnail for collab : {collab_name} on {interaction.command.name} ran by {interaction.user.name}")
+
+        parts_str = ""
+        for part in parts:
+            name, yt, creator = part
+            yt_link = f"[Open in browser]({yt})" if yt else "No YouTube link"
+            parts_str += f"**{name}** — by *{creator}* | {yt_link}\n"
+
+        list_embed.add_field(
+            name="List",
+            value=parts_str[:1024] if parts_str else "No parts found.",
+            inline=False
+        )
+
+        if total_builders and registered_parts < total_builders:
+            list_embed.set_footer(
+                text=(
+                    f"{total_builders - registered_parts} part(s) missing from this collab. "
+                    "Feel free to request them"
+                ),
+                icon_url=self.bot.user.avatar
+            )
+        else:
+            list_embed.set_footer(
+                text="All parts of this collab are registered.",
+                icon_url=self.bot.user.avatar
+            )
+
+        list_embed.set_thumbnail(url=self.bot.user.avatar)
+
+        applogger.debug_command(interaction)
+        await interaction.response.send_message(embed=list_embed)
+
 
     
 
