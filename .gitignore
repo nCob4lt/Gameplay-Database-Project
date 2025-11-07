@@ -7,4 +7,3 @@ logs/
 *.db-journal
 saves/
 gpdb.db
-TODO.md

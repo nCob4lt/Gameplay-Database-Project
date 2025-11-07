@@ -150,6 +150,146 @@ class MainCog(commands.Cog):
         recovery.load_save(filename)
         await interaction.response.send_message("Backup **successfully** loaded.")
 
+    @discord.app_commands.command(
+        name="database_stats",
+        description="Display a database dashboard with stats"
+    )
+    async def database_stats(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        cursor = database.cursor
+
+        try:
+            # --- Creators ---
+            cursor.execute("SELECT COUNT(*) FROM creator")
+            total_creators = cursor.fetchone()[0] or 0
+
+            cursor.execute("SELECT SUM(layouts_registered) FROM creator")
+            total_layouts_by_creators = cursor.fetchone()[0] or 0
+
+            cursor.execute("SELECT SUM(collab_participations) FROM creator")
+            total_collabs_by_creators = cursor.fetchone()[0] or 0
+
+            cursor.execute("""
+                SELECT username, (layouts_registered + collab_participations) AS total 
+                FROM creator ORDER BY total DESC LIMIT 5
+            """)
+            top_creators = cursor.fetchall()
+
+            # --- Musics & Artists ---
+            cursor.execute("SELECT COUNT(*) FROM music")
+            total_musics = cursor.fetchone()[0] or 0
+
+            cursor.execute("SELECT COUNT(*) FROM artist")
+            total_artists = cursor.fetchone()[0] or 0
+
+            cursor.execute("SELECT name, uses FROM music ORDER BY uses DESC LIMIT 5")
+            top_musics = cursor.fetchall()
+
+            cursor.execute("SELECT name, total_song_uses FROM artist ORDER BY total_song_uses DESC LIMIT 5")
+            top_artists = cursor.fetchall()
+
+            cursor.execute("SELECT COUNT(*) FROM music WHERE (yt IS NULL OR yt='') AND (soundcloud IS NULL OR soundcloud='')")
+            missing_links = cursor.fetchone()[0] or 0
+
+            # --- Layouts & Collabs ---
+            cursor.execute("SELECT COUNT(*) FROM layout")
+            total_layouts = cursor.fetchone()[0] or 0
+
+            cursor.execute("SELECT COUNT(*) FROM collab")
+            total_collabs = cursor.fetchone()[0] or 0
+
+            cursor.execute("SELECT COUNT(*) FROM layout WHERE masterlevel IS NOT NULL")
+            total_parts = cursor.fetchone()[0] or 0
+
+            cursor.execute("SELECT AVG(CAST(builders_number AS INTEGER)) FROM collab")
+            avg_builders = round(cursor.fetchone()[0] or 0, 1)
+
+            cursor.execute("SELECT SUM(CAST(builders_number AS INTEGER)) FROM collab")
+            total_expected_parts = cursor.fetchone()[0] or 0
+
+            incomplete_parts = total_expected_parts - total_parts
+
+            cursor.execute("SELECT COUNT(*) FROM layout WHERE type='Experimental'")
+            experimental_layouts = cursor.fetchone()[0] or 0
+
+            normal_layouts = total_layouts - experimental_layouts
+
+            cursor.execute("SELECT MAX(registration_date) FROM layout")
+            last_update = cursor.fetchone()[0] or "Unknown"
+
+        except Exception as e:
+            await interaction.followup.send(f"⚠️ Failed to fetch database stats: `{e}`")
+            return
+
+        # --- Build embed with sections ---
+        embed = discord.Embed(
+            title="📊 Gameplay Database Statistics",
+            color=discord.Color.dark_blue(),
+            description="Advanced dashboard of the database with nerdy stats"
+        )
+
+        # --- Creators Section ---
+        embed.add_field(name="💠 Creators", value="────────────────────", inline=False)
+        embed.add_field(name="Total creators", value=str(total_creators), inline=False)
+        embed.add_field(name="Layouts by creators", value=str(total_layouts_by_creators), inline=False)
+        embed.add_field(name="Collab participations", value=str(total_collabs_by_creators), inline=False)
+        embed.add_field(
+            name="Top 5 active creators",
+            value="\n".join([f"{c[0]} ({c[1]} levels)" for c in top_creators]) or "N/A",
+            inline=False
+        )
+
+        # --- Musics & Artists Section ---
+        embed.add_field(name="🎵 Musics & Artists", value="────────────────────", inline=False)
+        embed.add_field(name="Total musics", value=str(total_musics), inline=False)
+        embed.add_field(name="Total artists", value=str(total_artists), inline=False)
+        embed.add_field(
+            name="Top 5 musics by uses",
+            value="\n".join([f"{m[0]} ({m[1]} uses)" for m in top_musics]) or "N/A",
+            inline=False
+        )
+        embed.add_field(
+            name="Top 5 artists by song usage",
+            value="\n".join([f"{a[0]} ({a[1]} total uses)" for a in top_artists]) or "N/A",
+            inline=False
+        )
+        embed.add_field(name="Musics missing links", value=str(missing_links), inline=False)
+
+        # --- Layouts & Collabs Section ---
+        embed.add_field(name="🧩 Layouts & Collabs", value="────────────────────", inline=False)
+        embed.add_field(name="Total layouts", value=str(total_layouts), inline=False)
+        embed.add_field(name="Total collabs", value=str(total_collabs), inline=False)
+        embed.add_field(
+            name="Layout types",
+            value=f"Experimental: {experimental_layouts}\nNormal: {normal_layouts}",
+            inline=False
+        )
+        embed.add_field(
+            name="Parts info",
+            value=f"Registered: {total_parts}/{total_expected_parts}\n"
+                + (f"⚠️ Some parts are missing from the database!" if incomplete_parts > 0 else "All parts are recorded ✅"),
+            inline=False
+        )
+        embed.add_field(name="Average builders per collab", value=str(avg_builders), inline=False)
+
+        # --- General Section ---
+        embed.add_field(name="📂 General", value="────────────────────", inline=False)
+        embed.add_field(
+            name="Total entries (all tables)",
+            value=str(total_creators + total_layouts + total_collabs + total_musics + total_artists),
+            inline=True
+        )
+        embed.add_field(name="Last update", value=last_update, inline=False)
+
+        embed.set_footer(text="Gameplay Database • All stats")
+        embed.set_thumbnail(url=self.bot.user.avatar)
+
+        await interaction.followup.send(embed=embed)
+
+
+
+
+
 
     
 
