@@ -12,8 +12,8 @@
 - Add /parts_of ✅
 - Add /musics_from ✅
 - Add /database_stats ✅
-- Add pages settings for list commands
 - Add /missing
 - Add server interactions in logs
 - Add masterlevel as foreign key for layout -> collab
 - Add constants file
+- Add pages settings for list commands
