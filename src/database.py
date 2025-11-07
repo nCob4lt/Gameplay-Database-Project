@@ -563,6 +563,100 @@ def get_musics_from(artist):
         raise DataNotFound(f"No musics from '{artist}'")
     return result
 
+def get_layouts_with_music(music):
+    cursor.execute(''' SELECT name, yt, creator_name FROM layout WHERE music_name = ?''', (music,))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No layouts with following song : {music}")
+    return result
+
+def get_layouts_with_artist(artist):
+    cursor.execute(''' SELECT name, yt, creator_name FROM layout WHERE music_artist = ?''', (artist,))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No layouts with song from following artist : {artist}")
+    return result
+
+def get_collabs_with_music(music):
+    cursor.execute(''' SELECT name, yt, host_name FROM collab WHERE music_name = ?''', (music,))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No collabs with following song : {music}")
+    return result
+
+def get_collabs_with_artist(artist):
+    cursor.execute(''' SELECT name, yt, host_name FROM collab WHERE music_artist = ?''', (artist,))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No collabs with song from following artist : {artist}")
+    return result
+
+def get_levels_with_music(music):
+    """
+    Retrieves all levels (layouts + collabs) that use a given music.
+
+    Parameters
+    ----------
+    music : str
+        The name of the music to search for.
+
+    Returns
+    -------
+    list[tuple]
+        List of (name, yt) pairs for all layouts and collabs using the given music.
+
+    Raises
+    ------
+    DataNotFound
+        If no level uses the specified music.
+    """
+    cursor.execute(
+        '''
+        SELECT name, yt, creator_name FROM layout WHERE music_name = ?
+        UNION ALL
+        SELECT name, yt, host_name FROM collab WHERE music_name = ?;
+        ''',
+        (music, music)
+    )
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No levels with following song: {music}")
+    return result
+
+
+def get_levels_with_artist(artist):
+    """
+    Retrieves all levels (layouts + collabs) that use a song from a given artist.
+
+    Parameters
+    ----------
+    artist : str
+        The name of the artist to search for.
+
+    Returns
+    -------
+    list[tuple]
+        List of (name, yt) pairs for all layouts and collabs using a song from the given artist.
+
+    Raises
+    ------
+    DataNotFound
+        If no level uses a song from the specified artist.
+    """
+    cursor.execute(
+        '''
+        SELECT name, yt, creator_name FROM layout WHERE music_artist = ?
+        UNION ALL
+        SELECT name, yt, host_name FROM collab WHERE music_artist = ?;
+        ''',
+        (artist, artist)
+    )
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No levels with songs from following artist: {artist}")
+    return result
+
+
 def get_creators():
 
     """Returns all creators as a list of rows."""

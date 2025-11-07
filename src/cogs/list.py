@@ -172,5 +172,217 @@ class ListCog(commands.Cog):
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=list_embed)
 
+    @discord.app_commands.command(
+        name="layouts_with",
+        description="List all layouts that use a specific music or artist"
+    )
+    @discord.app_commands.describe(
+        choice="Search by music or artist",
+        name="Name of the music or artist"
+    )
+    @discord.app_commands.choices(
+        choice=[
+            discord.app_commands.Choice(name="Music", value="music"),
+            discord.app_commands.Choice(name="Artist", value="artist"),
+        ]
+    )
+    async def layouts_with(self, interaction: discord.Interaction, choice: discord.app_commands.Choice[str], name: str):
+        try:
+            if choice.value == "music":
+                get = database.get_layouts_with_music(name)
+            elif choice.value == "artist":
+                get = database.get_layouts_with_artist(name)
+        except DataNotFound:
+            await interaction.response.send_message(f"No **layouts** found for {choice.name.lower()} '{name}'")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            return
+
+        list_embed = discord.Embed(
+            title=f"Layouts with {choice.name.lower()}: {name}",
+            description=f"Total : {len(get)}",
+            color=discord.Color.dark_grey()
+        )
+
+        fullstring = "\n".join(
+            f"**{layout['name']}** by *{layout['creator_name']}* | [Open in browser]({layout['yt']})"
+            for layout in get
+        )
+
+        if choice.value == "music":
+            try:
+                getmusic = database.get_music_by_name(name)
+                url = tools.get_youtube_thumbnail(getmusic[0]["yt"])
+                if url:
+                    list_embed.set_image(url=url)
+            except DataNotFound:
+                applogger.error(f"Could not load yt thumbnail for music : {name} on {interaction.command.name}")
+
+        elif choice.value == "artist":
+            ytpp_url = None 
+            try:
+                getartist = database.get_artist_by_name(name)
+                channel_api_id = tools.get_yt_channel_id(getartist[0]['yt'])
+                ytpp_url = tools.get_youtube_pp(channel_api_id)
+            except (InvalidYouTubeURL, UnboundLocalError):
+                applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name}")
+                applogger.debug_command(interaction)
+                list_embed.add_field(name="List", value=fullstring[:1024])
+                list_embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+                return await interaction.response.send_message(embed=list_embed)
+            
+            if ytpp_url:
+                list_embed.set_image(url=ytpp_url)
+            else:
+                list_embed.set_footer(text="No YouTube link available", icon_url=self.bot.user.avatar)
+            
+
+        list_embed.add_field(name="List", value=fullstring[:1024])
+        list_embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        
+        applogger.debug_command(interaction)
+        await interaction.response.send_message(embed=list_embed)
+
+
+    @discord.app_commands.command(
+        name="collabs_with",
+        description="List all collabs that use a specific music or artist"
+    )
+    @discord.app_commands.describe(
+        choice="Search by music or artist",
+        name="Name of the music or artist"
+    )
+    @discord.app_commands.choices(
+        choice=[
+            discord.app_commands.Choice(name="Music", value="music"),
+            discord.app_commands.Choice(name="Artist", value="artist"),
+        ]
+    )
+    async def collabs_with(self, interaction: discord.Interaction, choice: discord.app_commands.Choice[str], name: str):
+        try:
+            if choice.value == "music":
+                get = database.get_collabs_with_music(name)
+            elif choice.value == "artist":
+                get = database.get_collabs_with_artist(name)
+        except DataNotFound:
+            await interaction.response.send_message(f"No **collabs** found for {choice.name.lower()} '{name}'")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            return
+
+        list_embed = discord.Embed(
+            title=f"Collabs with {choice.name.lower()}: {name}",
+            description=f"Total : {len(get)}",
+            color=discord.Color.dark_grey()
+        )
+
+        fullstring = "\n".join(
+            f"**{collab['name']}** hosted by *{collab['host_name']}* | [Open in browser]({collab['yt']})"
+            for collab in get
+        )
+
+        if choice.value == "music":
+            try:
+                getmusic = database.get_music_by_name(name)
+                url = tools.get_youtube_thumbnail(getmusic[0]["yt"])
+                if url:
+                    list_embed.set_image(url=url)
+            except DataNotFound:
+                applogger.error(f"Could not load yt thumbnail for music : {name} on {interaction.command.name}")
+
+        elif choice.value == "artist":
+            ytpp_url = None 
+            try:
+                getartist = database.get_artist_by_name(name)
+                channel_api_id = tools.get_yt_channel_id(getartist[0]['yt'])
+                ytpp_url = tools.get_youtube_pp(channel_api_id)
+            except (InvalidYouTubeURL, UnboundLocalError):
+                applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name}")
+                applogger.debug_command(interaction)
+                list_embed.add_field(name="List", value=fullstring[:1024])
+                list_embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+                return await interaction.response.send_message(embed=list_embed)
+            
+            if ytpp_url:
+                list_embed.set_image(url=ytpp_url)
+            else:
+                list_embed.set_footer(text="No YouTube link available", icon_url=self.bot.user.avatar)
+
+        list_embed.add_field(name="List", value=fullstring[:1024])
+        list_embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        
+        applogger.debug_command(interaction)
+        await interaction.response.send_message(embed=list_embed)
+
+
+    @discord.app_commands.command(
+        name="levels_with",
+        description="List all levels (layouts + collabs) that use a specific music or artist"
+    )
+    @discord.app_commands.describe(
+        choice="Search by music or artist",
+        name="Name of the music or artist"
+    )
+    @discord.app_commands.choices(
+        choice=[
+            discord.app_commands.Choice(name="Music", value="music"),
+            discord.app_commands.Choice(name="Artist", value="artist"),
+        ]
+    )
+    async def levels_with(self, interaction: discord.Interaction, choice: discord.app_commands.Choice[str], name: str):
+        try:
+            if choice.value == "music":
+                get = database.get_levels_with_music(name)
+            elif choice.value == "artist":
+                get = database.get_levels_with_artist(name)
+        except DataNotFound:
+            await interaction.response.send_message(f"No **levels** found for {choice.name.lower()} '{name}'")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            return
+
+        list_embed = discord.Embed(
+            title=f"Levels with {choice.name.lower()}: {name}",
+            description=f"Total : {len(get)}",
+            color=discord.Color.dark_grey()
+        )
+
+        fullstring = "\n".join(
+            f"**{lvl['name']}** by *{lvl['creator_name'] if 'creator_name' in lvl.keys() else lvl['host_name']}* | [Open in browser]({lvl['yt']})"
+            for lvl in get
+        )
+
+        if choice.value == "music":
+            try:
+                getmusic = database.get_music_by_name(name)
+                url = tools.get_youtube_thumbnail(getmusic[0]["yt"])
+                if url:
+                    list_embed.set_image(url=url)
+            except DataNotFound:
+                applogger.error(f"Could not load yt thumbnail for music : {name} on {interaction.command.name}")
+
+        elif choice.value == "artist":
+            ytpp_url = None 
+            try:
+                getartist = database.get_artist_by_name(name)
+                channel_api_id = tools.get_yt_channel_id(getartist[0]['yt'])
+                ytpp_url = tools.get_youtube_pp(channel_api_id)
+            except (InvalidYouTubeURL, UnboundLocalError):
+                applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name}")
+                applogger.debug_command(interaction)
+                list_embed.add_field(name="List", value=fullstring[:1024])
+                list_embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+                return await interaction.response.send_message(embed=list_embed)
+            
+            if ytpp_url:
+                list_embed.set_image(url=ytpp_url)
+            else:
+                list_embed.set_footer(text="No YouTube link available", icon_url=self.bot.user.avatar)
+
+        list_embed.add_field(name="List", value=fullstring[:1024])
+        list_embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        
+        applogger.debug_command(interaction)
+        await interaction.response.send_message(embed=list_embed)
+
+    
+
 
 
