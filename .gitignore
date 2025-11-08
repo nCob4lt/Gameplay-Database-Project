@@ -7,3 +7,5 @@ logs/
 *.db-journal
 saves/
 gpdb.db
+missing/
+tests/
