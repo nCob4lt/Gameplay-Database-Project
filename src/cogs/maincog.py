@@ -20,6 +20,9 @@ Author: cobalt
 # --- Standard imports ---
 import discord
 from discord.ext import commands, tasks
+import json
+import os
+from pathlib import Path
 
 # --- Local imports
 import database
@@ -283,6 +286,68 @@ class MainCog(commands.Cog):
 
         embed.set_footer(text="Gameplay Database • All stats")
         embed.set_thumbnail(url=self.bot.user.avatar)
+
+        await interaction.followup.send(embed=embed)
+
+    @discord.app_commands.command(
+        name="missing",
+        description="Display all missing data detected during the last database synchronization."
+    )
+    async def missing(self, interaction: discord.Interaction):
+        await interaction.response.defer(thinking=True)
+
+        json_path = Path(__file__).parent.parent.parent / "missing" / "missing_entries.json"
+
+        # If the file doesn't exist
+        if not os.path.exists(json_path):
+            await interaction.followup.send("No `missing_entries.json` file found. Wait for the synchronization to run first.")
+            return
+
+        # Try reading the JSON file
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as e:
+            await interaction.followup.send(f"Failed to read JSON file: `{e}`")
+            return
+
+        # Main embed
+        embed = discord.Embed(
+            title="📋 Missing Database Entries",
+            description="Here are all missing entries detected during the last database synchronization.",
+            color=discord.Color.dark_grey()
+        )
+        embed.set_thumbnail(url=self.bot.user.avatar)
+
+        total_missing = 0
+
+        # Helper function to format sections
+        def format_section(section_name, entries):
+            nonlocal total_missing
+            total_missing += len(entries)
+            if not entries:
+                return "No issues found."
+            return "\n".join([
+                f"• ID `{e.get('id', '?')}` — **{e.get('missing', 'Unknown')}** *(Error: {e.get('error', 'N/A')})*"
+                for e in entries[:10]  # limit to 10 lines per section
+            ]) + (f"\n…and {len(entries) - 10} more." if len(entries) > 10 else "")
+
+        # Add sections to embed
+        for section in ["layout", "collab", "music", "creator", "artist"]:
+            formatted = format_section(section, data.get(section, []))
+            embed.add_field(
+                name=f"{section.capitalize()} ({len(data.get(section, []))})",
+                value=formatted,
+                inline=False
+            )
+
+        embed.add_field(
+            name="Summary",
+            value=f"**Total missing entries:** {total_missing}",
+            inline=False
+        )
+
+        embed.set_footer(text="Gameplay Database • Missing Data Report")
 
         await interaction.followup.send(embed=embed)
 

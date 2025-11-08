@@ -21,6 +21,9 @@ Author: cobalt
 import sqlite3
 from datetime import datetime
 import asyncio
+import json
+
+from pathlib import Path
 
 # --- Local imports ---
 from utilities import tools
@@ -779,6 +782,16 @@ def synchronize_data():
     - Updates songs_registered and total_song_uses for artists
 
     """
+
+    missing_data = {
+        "layout": [],
+        "collab": [],
+        "music": [],
+        "creator": [],
+        "artist": []
+    }
+
+    json_path = Path(__file__).parent.parent / "missing" / "missing_entries.json"
         
     # --- Update layout, collab, and music IDs ---
 
@@ -793,6 +806,7 @@ def synchronize_data():
                 cursor.execute(''' UPDATE layout SET creator_id = ? WHERE id = ?; ''', (context_creator[0][0], id,))
         except Exception as e:
             applogger.warning(f"[LAYOUT:{id}] Failed to update creator_id: {e}")
+            missing_data["layout"].append({"id": id, "missing": "creator_id", "error": str(e)})
 
         try:
             context_artist = get_artist_by_name(music_artist)
@@ -800,6 +814,7 @@ def synchronize_data():
                 cursor.execute(''' UPDATE layout SET artist_id = ? WHERE id = ?; ''', (context_artist[0][0], id,))
         except Exception as e:
             applogger.warning(f"[LAYOUT:{id}] Failed to update artist_id: {e}")
+            missing_data["layout"].append({"id": id, "missing": "artist_id", "error": str(e)})
 
         try:
             context_music = get_music_by_name(music_name)
@@ -807,6 +822,7 @@ def synchronize_data():
                 cursor.execute(''' UPDATE layout SET music_id = ? WHERE id = ?; ''', (context_music[0][0], id,))
         except Exception as e:
             applogger.warning(f"[LAYOUT:{id}] Failed to update music_id: {e}")
+            missing_data["layout"].append({"id": id, "missing": "music_id", "error": str(e)})
 
     # --- Update collab table IDs similarly ---
 
@@ -823,6 +839,7 @@ def synchronize_data():
 
         except Exception as e:
             applogger.warning(f"[COLLAB:{id}] Failed to update host_id: {e}")
+            missing_data["collab"].append({"id": id, "missing": "host_id", "error": str(e)})
 
         try:
 
@@ -832,6 +849,7 @@ def synchronize_data():
         
         except Exception as e:
             applogger.warning(f"[COLLAB:{id}] Failed to update artist_id: {e}")
+            missing_data["collab"].append({"id": id, "missing": "artist_id", "error": str(e)})
 
         try:
 
@@ -841,6 +859,7 @@ def synchronize_data():
 
         except Exception as e:
             applogger.warning(f"[COLLAB:{id}] Failed to update music_id: {e}")
+            missing_data["collab"].append({"id": id, "missing": "music_id", "error": str(e)})
 
 
     cursor.execute(''' SELECT id, artist FROM music WHERE artist_id IS NULL; ''')
@@ -854,6 +873,7 @@ def synchronize_data():
                 cursor.execute(''' UPDATE music SET artist_id = ? WHERE id = ?; ''', (context_artist[0][0], id,))
         except Exception as e:
             applogger.warning(f"[MUSIC:{id}] Failed to update artist_id: {e}")
+            missing_data["music"].append({"id": id, "missing": "artist_id", "error": str(e)})
 
     # --- Update creator stats (layouts_registered, collab_participations, total_time_built) ---
 
@@ -920,7 +940,11 @@ def synchronize_data():
     
     connection.commit()
 
-    applogger.info("Database successfully synced")
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(missing_data, f, indent=4, ensure_ascii=False)
+        
+
+    applogger.info("Database successfully synced and missing data logged")
 
 
 def execute_queries(script: str):
