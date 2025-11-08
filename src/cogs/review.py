@@ -24,7 +24,7 @@ class ReviewCog(commands.Cog):
             next_request = database.get_oldest_request()
         except DataNotFound:
             await interaction.response.send_message("**No** pending requests at the moment.")
-            applogger.error(f"No pending requests at the moment - Interaction user : {interaction.user.name}")
+            applogger.error(f"No pending requests at the moment - Interaction user : {interaction.user.name} in {interaction.guild.name}")
             return
         
         type_, id_, date = next_request
@@ -33,7 +33,7 @@ class ReviewCog(commands.Cog):
             details = database.get_request_details(type_, id_)
         except DataNotFound:
             await interaction.response.send_message("Failed to fetch requests details, check traceback in *latest.log* for more details")
-            applogger.error(f"No pending requests at the moment - Interaction user : {interaction.user.name}")
+            applogger.error(f"No pending requests at the moment - Interaction user : {interaction.user.name} in {interaction.guild.name}")
             return
         
         embed = discord.Embed(

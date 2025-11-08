@@ -123,10 +123,10 @@ class ReviewRequestView(discord.ui.View):
         database.delete_request(self.request_type, self.request_id)
 
         await interaction.response.edit_message(content="✅ Request **accepted** and **processed!**", embed=None, view=None)
-        applogger.info(f"Request {self.request_type} ID: {self.request_id} accepted by {interaction.user}")
+        applogger.info(f"Request {self.request_type} ID: {self.request_id} accepted by {interaction.user} in {interaction.guild.name}")
 
     @discord.ui.button(label="❌ Reject", style=discord.ButtonStyle.danger)
     async def reject(self, interaction: discord.Interaction, button: discord.ui.Button):
         database.delete_request(self.request_type, self.request_id)
         await interaction.response.edit_message(content="❌ Request **rejected** and **deleted.**", embed=None, view=None)
-        applogger.warning(f"Request {self.request_type} #{self.request_id} rejected by {interaction.user}")
+        applogger.warning(f"Request {self.request_type} #{self.request_id} rejected by {interaction.user} in {interaction.guild.name}")

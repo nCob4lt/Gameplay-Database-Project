@@ -20,7 +20,7 @@ class ListCog(commands.Cog):
             get = database.get_layouts_from(user.global_name)
         except DataNotFound:
             await interaction.response.send_message(f"No **levels** from {user.global_name}")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name} in {interaction.guild.name}")
             return
         
         list_embed = discord.Embed(
@@ -49,7 +49,7 @@ class ListCog(commands.Cog):
             get = database.get_collabs_from(user.global_name)
         except DataNotFound:
             await interaction.response.send_message(f"No **collabs** from {user.global_name}")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name} in {interaction.guild.name}")
             return
         
         list_embed = discord.Embed(
@@ -79,7 +79,7 @@ class ListCog(commands.Cog):
             get = database.get_parts_from(user.global_name)
         except DataNotFound:
             await interaction.response.send_message(f"No **collab parts** from {user.global_name}")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name} in {interaction.guild.name}")
             return
 
         list_embed = discord.Embed(
@@ -111,7 +111,7 @@ class ListCog(commands.Cog):
             get = database.get_musics_from(artist)
         except DataNotFound:
             await interaction.response.send_message(f"No **musics** from {artist}")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name} in {interaction.guild.name}")
             return
         
         list_embed = discord.Embed(
@@ -141,7 +141,7 @@ class ListCog(commands.Cog):
             channel_api_id = tools.get_yt_channel_id(db_artist['yt'])
             ytpp_url = tools.get_youtube_pp(channel_api_id)
         except (InvalidYouTubeURL, UnboundLocalError):
-            applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name}")
+            applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             applogger.debug_command(interaction)
             return await interaction.response.send_message(embed=list_embed)
         
@@ -163,7 +163,7 @@ class ListCog(commands.Cog):
             get = database.get_levels_from(user.global_name)
         except DataNotFound:
             await interaction.response.send_message(f"No **levels** (layouts or collabs) from {user.global_name}")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name} in {interaction.guild.name}")
             return
         
         list_embed = discord.Embed(
@@ -225,7 +225,7 @@ class ListCog(commands.Cog):
                 get = database.get_layouts_with_artist(name)
         except DataNotFound:
             await interaction.response.send_message(f"No **layouts** found for {choice.name.lower()} '{name}'")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
 
         list_embed = discord.Embed(
@@ -246,7 +246,7 @@ class ListCog(commands.Cog):
                 if url:
                     list_embed.set_image(url=url)
             except DataNotFound:
-                applogger.error(f"Could not load yt thumbnail for music : {name} on {interaction.command.name}")
+                applogger.error(f"Could not load yt thumbnail for music : {name} on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
 
         elif choice.value == "artist":
             ytpp_url = None 
@@ -255,7 +255,7 @@ class ListCog(commands.Cog):
                 channel_api_id = tools.get_yt_channel_id(getartist[0]['yt'])
                 ytpp_url = tools.get_youtube_pp(channel_api_id)
             except (InvalidYouTubeURL, UnboundLocalError):
-                applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name}")
+                applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
                 applogger.debug_command(interaction)
                 list_embed.add_field(name="List", value=fullstring[:1024])
                 list_embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
@@ -296,7 +296,7 @@ class ListCog(commands.Cog):
                 get = database.get_collabs_with_artist(name)
         except DataNotFound:
             await interaction.response.send_message(f"No **collabs** found for {choice.name.lower()} '{name}'")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
 
         list_embed = discord.Embed(
@@ -317,7 +317,7 @@ class ListCog(commands.Cog):
                 if url:
                     list_embed.set_image(url=url)
             except DataNotFound:
-                applogger.error(f"Could not load yt thumbnail for music : {name} on {interaction.command.name}")
+                applogger.error(f"Could not load yt thumbnail for music : {name} on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
 
         elif choice.value == "artist":
             ytpp_url = None 
@@ -326,7 +326,7 @@ class ListCog(commands.Cog):
                 channel_api_id = tools.get_yt_channel_id(getartist[0]['yt'])
                 ytpp_url = tools.get_youtube_pp(channel_api_id)
             except (InvalidYouTubeURL, UnboundLocalError):
-                applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name}")
+                applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
                 applogger.debug_command(interaction)
                 list_embed.add_field(name="List", value=fullstring[:1024])
                 list_embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
@@ -366,7 +366,7 @@ class ListCog(commands.Cog):
                 get = database.get_levels_with_artist(name)
         except DataNotFound:
             await interaction.response.send_message(f"No **levels** found for {choice.name.lower()} '{name}'")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
 
         list_embed = discord.Embed(
@@ -387,7 +387,7 @@ class ListCog(commands.Cog):
                 if url:
                     list_embed.set_image(url=url)
             except DataNotFound:
-                applogger.error(f"Could not load yt thumbnail for music : {name} on {interaction.command.name} ran by {interaction.user.name}")
+                applogger.error(f"Could not load yt thumbnail for music : {name} on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
 
         elif choice.value == "artist":
             ytpp_url = None 
@@ -396,7 +396,7 @@ class ListCog(commands.Cog):
                 channel_api_id = tools.get_yt_channel_id(getartist[0]['yt'])
                 ytpp_url = tools.get_youtube_pp(channel_api_id)
             except (InvalidYouTubeURL, UnboundLocalError):
-                applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name}")
+                applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
                 applogger.debug_command(interaction)
                 list_embed.add_field(name="List", value=fullstring[:1024])
                 list_embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
@@ -423,7 +423,7 @@ class ListCog(commands.Cog):
             parts, total_builders = database.get_parts_of(collab_name)
         except DataNotFound:
             await interaction.response.send_message(f"No **parts** found for collab `{collab_name}`.")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
 
         registered_parts = len(parts)
@@ -440,7 +440,7 @@ class ListCog(commands.Cog):
             if url:
                 list_embed.set_image(url=url)
         except DataNotFound:
-            applogger.error(f"Couldn't get yt thumbnail for collab : {collab_name} on {interaction.command.name} ran by {interaction.user.name}")
+            applogger.error(f"Couldn't get yt thumbnail for collab : {collab_name} on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
 
         parts_str = ""
         for part in parts:

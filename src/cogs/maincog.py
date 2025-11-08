@@ -288,6 +288,7 @@ class MainCog(commands.Cog):
         embed.set_thumbnail(url=self.bot.user.avatar)
 
         await interaction.followup.send(embed=embed)
+        applogger.debug_command(interaction)
 
     @discord.app_commands.command(
         name="missing",
@@ -350,6 +351,7 @@ class MainCog(commands.Cog):
         embed.set_footer(text="Gameplay Database • Missing Data Report")
 
         await interaction.followup.send(embed=embed)
+        applogger.debug_command(interaction)
 
 
 

@@ -161,6 +161,6 @@ class AppLogger:
 
         """
         args_list = [f"{opt['name']}={opt['value']}" for opt in interaction.data.get("options", [])]
-        self.debug(f"{interaction.user.name} used {interaction.command.name} within the following args: {args_list}")
+        self.debug(f"{interaction.user.name} used {interaction.command.name} in {interaction.guild.name} within the following args: {args_list}")
 
         

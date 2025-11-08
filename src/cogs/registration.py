@@ -147,7 +147,7 @@ class RegistrationCog(commands.Cog):
             await tools.is_valid_duration(length)
         except InvalidDurationFormat:
             await interaction.response.send_message("**Invalid** duration format. Corrrect format : __**x**h**y**min**z**s__")
-            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name}")
+            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
         
         registrator = interaction.user.name
@@ -219,7 +219,7 @@ class RegistrationCog(commands.Cog):
             await tools.is_valid_duration(length)
         except InvalidDurationFormat:
             await interaction.response.send_message("**Invalid** duration format. Corrrect format : __**x**h**y**min**z**s__")
-            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name}")
+            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
 
         registrator = interaction.user.name
@@ -286,7 +286,7 @@ class RegistrationCog(commands.Cog):
             await tools.is_valid_duration(length)
         except InvalidDurationFormat:
             await interaction.response.send_message("**Invalid** duration format. Corrrect format : __**x**h**y**min**z**s__")
-            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name}")
+            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
 
         registrator = interaction.user.name

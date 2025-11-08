@@ -323,7 +323,7 @@ async def check_mod(interaction: discord.Interaction):
     with open(json_file, "r", encoding="utf-8") as f:
         data = json.load(f)
     if interaction.user.id not in data.get("mods", []):
-        applogger.error(f" Unauthorized user {interaction.user.name} tried to use mod command {interaction.command.name} (user was not found in the whitelist)")
+        applogger.error(f" Unauthorized user {interaction.user.name} tried to use mod command {interaction.command.name} in {interaction.guild.name} (user was not found in the whitelist)")
         raise MissingModPermissions("Interaction user was not found in the mod whitelist")
 
         

@@ -76,7 +76,7 @@ class QueryCog(commands.Cog):
             get = database.get_creator_by_name(user.global_name)
         except DataNotFound:
             await interaction.response.send_message("**User** not found.")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
         
         creator = get[0]
@@ -121,7 +121,7 @@ class QueryCog(commands.Cog):
             get = database.get_layout_by_name(name)
         except DataNotFound:
             await interaction.response.send_message("**User** not found.")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
 
         layout = get[0]
@@ -174,7 +174,7 @@ class QueryCog(commands.Cog):
             get = database.get_collab_by_name(name)
         except DataNotFound:
             await interaction.response.send_message("**Collab** not found.")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
 
         collab = get[0]
@@ -225,7 +225,7 @@ class QueryCog(commands.Cog):
             get = database.get_music_by_name(name)
         except DataNotFound:
             await interaction.response.send_message("**Music** not found.")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
         
         music = get[0]
@@ -274,7 +274,7 @@ class QueryCog(commands.Cog):
             get = database.get_artist_by_name(name)
         except DataNotFound:
             await interaction.response.send_message("**Artist** not found.")
-            applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name}")
+            applogger.error(f"Empty response on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
         
         artist = get[0]
@@ -304,7 +304,7 @@ class QueryCog(commands.Cog):
             channel_api_id = tools.get_yt_channel_id(artist['yt'])
             ytpp_url = tools.get_youtube_pp(channel_api_id)
         except (InvalidYouTubeURL, UnboundLocalError):
-            applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name}")
+            applogger.warning(f"Failed to retrieve info due to youtube URL on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             applogger.debug_command(interaction)
             return await interaction.response.send_message(embed=embed)
         
