@@ -13,7 +13,9 @@
 - Add /musics_from ✅
 - Add /database_stats ✅
 - Add /missing ✅
-- Add server interactions in logs
+- Add server interactions in logs ✅
 - Add masterlevel as foreign key for layout -> collab
 - Add constants file
-- Add pages settings for list commands
+- Add pages settings for list commands ✅
+- Add random command
+- Add gdusername in creator table
