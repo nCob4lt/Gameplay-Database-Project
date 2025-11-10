@@ -14,7 +14,7 @@
 - Add /database_stats ✅
 - Add /missing ✅
 - Add server interactions in logs ✅
-- Add masterlevel as foreign key for layout -> collab
+- Add masterlevel as foreign key for layout -> collab ✅
 - Add constants file ✅
 - Change database path ✅
 - Add pages settings for list commands ✅
