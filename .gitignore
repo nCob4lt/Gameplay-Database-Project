@@ -9,3 +9,4 @@ saves/
 gpdb.db
 missing/
 tests/
+data/

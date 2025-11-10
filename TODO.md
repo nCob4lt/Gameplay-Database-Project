@@ -15,7 +15,9 @@
 - Add /missing ✅
 - Add server interactions in logs ✅
 - Add masterlevel as foreign key for layout -> collab
-- Add constants file
+- Add constants file ✅
+- Change database path ✅
 - Add pages settings for list commands ✅
-- Add random command
+- Add /random command
 - Add gdusername in creator table
+- Add /about command 
