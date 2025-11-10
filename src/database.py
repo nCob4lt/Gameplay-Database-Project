@@ -113,7 +113,9 @@ def initialize():
                    recorder_name TEXT,
                    recorder_notes TEXT,
                    artist_id INTEGER,
-                   masterlevel TEXT DEFAULT NULL,                             
+                   masterlevel_id INTEGER,
+                   masterlevel TEXT DEFAULT NULL,
+                   FOREIGN KEY (masterlevel_id) REFERENCES collab(id),                             
                    FOREIGN KEY (creator_id) REFERENCES creator(id),
                    FOREIGN KEY (artist_id) REFERENCES artist(id),
                    FOREIGN KEY (music_id) REFERENCES music(id));''')
@@ -795,10 +797,10 @@ def synchronize_data():
         
     # --- Update layout, collab, and music IDs ---
 
-    cursor.execute(''' SELECT id, creator_name, music_name, music_artist FROM layout WHERE creator_id IS NULL OR artist_id IS NULL OR music_id is NULL; ''')
+    cursor.execute(''' SELECT id, creator_name, music_name, music_artist, masterlevel FROM layout WHERE creator_id IS NULL OR artist_id IS NULL OR music_id IS NULL OR masterlevel_id IS NULL; ''')
     layouts = cursor.fetchall()
 
-    for id, creator_name, music_name, music_artist in layouts:
+    for id, creator_name, music_name, music_artist, masterlevel in layouts:
 
         try:
             context_creator = get_creator_by_name(creator_name)
@@ -823,6 +825,14 @@ def synchronize_data():
         except Exception as e:
             applogger.warning(f"[LAYOUT:{id}] Failed to update music_id: {e}")
             missing_data["layout"].append({"id": id, "missing": "music_id", "error": str(e)})
+
+        try:
+            context_masterlevel = get_collab_by_name(masterlevel)
+            if context_masterlevel:
+                cursor.execute(''' UPDATE layout SET masterlevel_id = ? WHERE id = ?''', (context_masterlevel[0][0], id,))
+        except Exception as e:
+            applogger.warning(f"[LAYOUT:{id}] Failed to update masterlevel_id: {e}")
+            missing_data["layout"].append({"id": id, "missing": "masterlevel_id", "error": str(e)})
 
     # --- Update collab table IDs similarly ---
 

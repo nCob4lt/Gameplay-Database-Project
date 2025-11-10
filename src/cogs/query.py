@@ -146,6 +146,7 @@ class QueryCog(commands.Cog):
         embed.add_field(name="Music artist", value=layout["music_artist"], inline=False)
         embed.add_field(name="In-game ID", value=layout["igid"], inline=False)
         embed.add_field(name="Masterlevel", value=layout["masterlevel"], inline=False)
+        embed.add_field(name="Masterlevel ID (database)", value=layout["masterlevel_id"], inline=False)
         embed.add_field(name="Registration date", value=layout["registration_date"], inline=False)
         embed.add_field(name="Recorder name", value=layout["recorder_name"], inline=False)
         embed.add_field(name="Recorder notes", value=layout["recorder_notes"], inline=False)
