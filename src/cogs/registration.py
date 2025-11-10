@@ -29,7 +29,7 @@ from utilities import tools
 from exceptions.custom_exceptions import *
 
 # --- Initialization section ---
-connection = sqlite3.connect("gpdb.db")
+connection = sqlite3.connect("data/gpdb.db")
 c = connection.cursor()
 database.initialize()
 connection.commit()

@@ -64,7 +64,7 @@ def create_save():
     timestamp = datetime.today().strftime("%Y-%m-%d%H%M%S")
     backup_file = save_dir / f"gpdb-backup{timestamp}.sql"
 
-    connection = sqlite3.connect("gpdb.db")
+    connection = sqlite3.connect("data/gpdb.db")
     with io.open(backup_file, "w", encoding="utf-8") as p:
         for line in connection.iterdump():
             p.write('%s\n' % line)

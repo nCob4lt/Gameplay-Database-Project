@@ -66,7 +66,7 @@ async def database_worker():
 
 
 # --- Database connection ---
-connection = sqlite3.connect("gpdb.db")
+connection = sqlite3.connect("data/gpdb.db")
 connection.row_factory = sqlite3.Row
 cursor = connection.cursor()
 cursor.execute("PRAGMA foreign_keys = ON;")
