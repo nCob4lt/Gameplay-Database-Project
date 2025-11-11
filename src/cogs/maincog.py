@@ -29,6 +29,7 @@ import database
 from utilities.applogger import AppLogger
 from utilities import recovery
 from utilities import tools
+from views.paginator import PaginatorView
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from meta.constants import *
@@ -227,14 +228,12 @@ class MainCog(commands.Cog):
             await interaction.followup.send(f"⚠️ Failed to fetch database stats: `{e}`")
             return
 
-        # --- Build embed with sections ---
         embed = discord.Embed(
             title="📊 Gameplay Database Statistics",
             color=discord.Color.dark_blue(),
             description="Advanced dashboard of the database with nerdy stats"
         )
 
-        # --- Creators Section ---
         embed.add_field(name="💠 Creators", value="────────────────────", inline=False)
         embed.add_field(name="Total creators", value=str(total_creators), inline=False)
         embed.add_field(name="Layouts by creators", value=str(total_layouts_by_creators), inline=False)
@@ -245,7 +244,6 @@ class MainCog(commands.Cog):
             inline=False
         )
 
-        # --- Musics & Artists Section ---
         embed.add_field(name="🎵 Musics & Artists", value="────────────────────", inline=False)
         embed.add_field(name="Total musics", value=str(total_musics), inline=False)
         embed.add_field(name="Total artists", value=str(total_artists), inline=False)
@@ -261,7 +259,6 @@ class MainCog(commands.Cog):
         )
         embed.add_field(name="Musics missing links", value=str(missing_links), inline=False)
 
-        # --- Layouts & Collabs Section ---
         embed.add_field(name="🧩 Layouts & Collabs", value="────────────────────", inline=False)
         embed.add_field(name="Total layouts", value=str(total_layouts), inline=False)
         embed.add_field(name="Total collabs", value=str(total_collabs), inline=False)
@@ -278,7 +275,6 @@ class MainCog(commands.Cog):
         )
         embed.add_field(name="Average builders per collab", value=str(avg_builders), inline=False)
 
-        # --- General Section ---
         embed.add_field(name="📂 General", value="────────────────────", inline=False)
         embed.add_field(
             name="Total entries (all tables)",
@@ -302,12 +298,10 @@ class MainCog(commands.Cog):
 
         json_path = Path(__file__).parent.parent.parent / "missing" / "missing_entries.json"
 
-        # If the file doesn't exist
         if not os.path.exists(json_path):
             await interaction.followup.send("No `missing_entries.json` file found. Wait for the synchronization to run first.")
             return
 
-        # Try reading the JSON file
         try:
             with open(json_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -315,7 +309,6 @@ class MainCog(commands.Cog):
             await interaction.followup.send(f"Failed to read JSON file: `{e}`")
             return
 
-        # Main embed
         embed = discord.Embed(
             title="📋 Missing Database Entries",
             description="Here are all missing entries detected during the last database synchronization.",
@@ -325,7 +318,7 @@ class MainCog(commands.Cog):
 
         total_missing = 0
 
-        # Helper function to format sections
+
         def format_section(section_name, entries):
             nonlocal total_missing
             total_missing += len(entries)
@@ -333,10 +326,9 @@ class MainCog(commands.Cog):
                 return "No issues found."
             return "\n".join([
                 f"• ID `{e.get('id', '?')}` — **{e.get('missing', 'Unknown')}** *(Error: {e.get('error', 'N/A')})*"
-                for e in entries[:10]  # limit to 10 lines per section
+                for e in entries[:10]
             ]) + (f"\n…and {len(entries) - 10} more." if len(entries) > 10 else "")
 
-        # Add sections to embed
         for section in ["layout", "collab", "music", "creator", "artist"]:
             formatted = format_section(section, data.get(section, []))
             embed.add_field(
@@ -382,6 +374,83 @@ class MainCog(commands.Cog):
         embed.set_footer(text=f"{PROJECT_NAME} • Stable Build", icon_url=self.bot.user.avatar)
 
         await interaction.response.send_message(embed=embed)
+
+
+    @discord.app_commands.command(
+    name="help",
+    description="Display all bot commands grouped by category"
+    )
+    async def help(self, interaction: discord.Interaction):
+        embeds = []
+
+        groups = {
+            "📝 Retrieving object": [
+                ("/get_artist_by_name", "Retrieve an artist by name"),
+                ("/get_collab_by_name", "Retrieve a collab by name"),
+                ("/get_creator_by_name", "Retrieve a creator by name"),
+                ("/get_layout_by_name", "Retrieve a layout by name"),
+                ("/get_music_by_name", "Retrieve a music by name"),
+                ("/get_random_layout", "Retrieve a random layout from the database")
+            ],
+            "📋 Retrieving list of objects": [
+                ("/layouts_from", "List layouts from a creator"),
+                ("/layouts_with", "List layouts using a specific music or artist"),
+                ("/levels_from", "List layouts and collabs from a creator"),
+                ("/levels_with", "List all levels (layouts + collabs) using a music or artist"),
+                ("/collabs_from", "List collabs from a creator"),
+                ("/collabs_with", "List collabs using a specific music or artist"),
+                ("/musics_from", "List musics registered from an artist"),
+                ("/parts_from", "List parts created by a creator"),
+                ("/parts_of", "List parts associated with a layout or collab")
+            ],
+            "🛠 Registration requests": [
+                ("/request_artist", "Request the registration of an artist"),
+                ("/request_collab", "Request the registration of a collab"),
+                ("/request_creator", "Request the registration of a creator"),
+                ("/request_layout", "Request the registration of a layout"),
+                ("/request_music", "Request the registration of a music")
+            ],
+            "ℹ️ General": [
+                ("/about", "Information about the bot"),
+                ("/missing", "Show missing references in the database"),
+                ("/database_stats", "Show statistics about the database")
+            ],
+            "🔧 Mod actions": [
+                ("/add_artist", "Add a new artist to the database"),
+                ("/add_collab", "Add a new collab to the database"),
+                ("/add_layout", "Add a new layout to the database"),
+                ("/add_music", "Add a new music to the database"),
+                ("/review_next_request", "Review the next pending registration request")
+            ]
+        }
+
+        total_pages = len(groups)
+        for idx, (group_name, commands) in enumerate(groups.items(), start=1):
+            embed = discord.Embed(
+                title=group_name,
+                description=f"**{len(commands)} command(s)** in this category",
+                color=discord.Color.blurple()
+            )
+
+            for cmd_name, cmd_desc in commands:
+                embed.add_field(
+                    name=f"> {cmd_name}",
+                    value=f"_{cmd_desc}_",
+                    inline=False
+                )
+
+            embed.set_footer(
+                text=f"{PROJECT_NAME} - Page {idx}/{total_pages} | Use buttons to navigate",
+                icon_url=self.bot.user.avatar
+            )
+            embed.set_thumbnail(url=self.bot.user.avatar)
+            embeds.append(embed)
+
+        view = PaginatorView(embeds, interaction.user)
+        applogger.debug_command(interaction)
+        await interaction.response.send_message(embed=embeds[0], view=view)
+
+
 
 
 
