@@ -162,6 +162,37 @@ class MainCog(commands.Cog):
         description="Display a database dashboard with stats"
     )
     async def database_stats(self, interaction: discord.Interaction):
+
+        """
+        Display a comprehensive database dashboard with statistics.
+
+        This command fetches and aggregates key metrics from the Gameplay Database,
+        including creators, musics, artists, layouts, collabs, and parts. The results
+        are presented in a structured Discord embed with categorized sections.
+
+        Statistics provided:
+            - Creators: total number, layouts registered, collab participations,
+            and top 5 most active creators.
+            - Musics & Artists: total counts, top 5 musics by uses, top 5 artists by song usage,
+            and musics missing links.
+            - Layouts & Collabs: total counts, layout types (Experimental/Normal),
+            registered vs. expected parts, and average builders per collab.
+            - General: total entries across all tables and the date of the last layout registration.
+
+        The command handles database errors gracefully and logs all interactions
+        via the application logger.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction object representing the user's slash command invocation.
+
+        Returns
+        -------
+        None
+            Sends a Discord embed as a response containing the aggregated statistics.
+        """
+
         await interaction.response.defer()
         cursor = database.cursor
 
@@ -294,6 +325,29 @@ class MainCog(commands.Cog):
         description="Display all missing data detected during the last database synchronization."
     )
     async def missing(self, interaction: discord.Interaction):
+
+        """
+        Display a report of all missing database entries detected during the last synchronization.
+
+        This command reads the `missing_entries.json` file generated during the
+        most recent database synchronization and presents the missing data in a
+        structured Discord embed. The report includes missing entries for layouts,
+        collabs, musics, creators, and artists, along with error details for each
+        entry. A summary field shows the total number of missing entries.
+
+        If the JSON file is not found or cannot be read, the command informs
+        the user appropriately.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction object representing the user's slash command invocation.
+
+        Returns
+        -------
+        None
+            Sends a Discord embed listing missing entries and a summary of total missing items.
+        """
         await interaction.response.defer(thinking=True)
 
         json_path = Path(__file__).parent.parent.parent / "missing" / "missing_entries.json"
@@ -354,6 +408,25 @@ class MainCog(commands.Cog):
         description="Shows general information about the Gameplay Database project"
     )
     async def about(self, interaction: discord.Interaction):
+
+        """
+        Display general information about the Gameplay Database bot.
+
+        This command sends a rich Discord embed summarizing the project,
+        including version information, Python version, developer name,
+        Discord.py library version, bot latency, number of servers and users,
+        GitHub repository link, and bot invite link.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction object representing the user's slash command invocation.
+
+        Returns
+        -------
+        None
+            Sends a Discord embed with project information.
+        """
         embed = discord.Embed(
             title=f"📘 About {PROJECT_NAME}",
             description="A structured database project for layouts, collabs, and musics in Geometry Dash.",
@@ -381,6 +454,31 @@ class MainCog(commands.Cog):
     description="Display all bot commands grouped by category"
     )
     async def help(self, interaction: discord.Interaction):
+
+        """
+        Display a categorized overview of all available bot commands.
+
+        This command generates paginated Discord embeds grouping commands by category:
+        - Retrieving individual objects
+        - Retrieving lists of objects
+        - Registration requests
+        - General commands
+        - Moderation actions
+
+        Each embed lists commands with their descriptions, and pagination buttons allow
+        users to navigate through different categories.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction object representing the user's slash command invocation.
+
+        Returns
+        -------
+        None
+            Sends the first embed with a paginated view for browsing all commands.
+        """
+        
         embeds = []
 
         groups = {

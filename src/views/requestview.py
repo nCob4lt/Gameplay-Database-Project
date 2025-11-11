@@ -8,7 +8,34 @@ applogger = AppLogger()
 
 class ReviewRequestView(discord.ui.View):
 
+    """
+    A Discord UI View for reviewing pending registration requests in the Gameplay Database.
+
+    This view provides "Accept" and "Reject" buttons to allow moderators to approve or reject 
+    pending requests for creators, layouts, collabs, music, or artists. Upon accepting, the request 
+    is processed and added to the database asynchronously. Rejected requests are removed without 
+    being processed.
+
+    Attributes
+    ----------
+    request_type : str
+        The type of the registration request (e.g., "creator", "layout", "collab", "music", "artist").
+    request_id : int
+        The unique identifier of the pending request in the database.
+    """
+
     def __init__(self, request_type, request_id):
+
+        """
+        Initialize the ReviewRequestView with the type and ID of the request.
+
+        Parameters
+        ----------
+        request_type : str
+            The type of request to review.
+        request_id : int
+            The ID of the request to review.
+        """
 
         super().__init__(timeout=None)
         self.request_type = request_type
@@ -16,6 +43,27 @@ class ReviewRequestView(discord.ui.View):
 
     @discord.ui.button(label="✅ Accept", style=discord.ButtonStyle.success)
     async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        """
+        Accept and process the pending request.
+
+        Fetches request details from the database and enqueues the corresponding registration 
+        function to add it permanently. Only valid request types are processed. Upon completion, 
+        the request is removed from the queue.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction triggered by clicking the "Accept" button.
+        button : discord.ui.Button
+            The button that was clicked.
+
+        Notes
+        -----
+        - Supports request types: "creator", "layout", "collab", "music", "artist".
+        - Unknown request types will log an error and abort processing.
+        - Database operations are enqueued to `database.database_queue` for asynchronous execution.
+        """
 
         try:
             details = database.get_request_details(self.request_type, self.request_id)
@@ -128,6 +176,20 @@ class ReviewRequestView(discord.ui.View):
 
     @discord.ui.button(label="❌ Reject", style=discord.ButtonStyle.danger)
     async def reject(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        """
+        Reject and delete the pending request.
+
+        Removes the request from the database without processing it.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction triggered by clicking the "Reject" button.
+        button : discord.ui.Button
+            The button that was clicked.
+        """
+        
         database.delete_request(self.request_type, self.request_id)
         await interaction.response.edit_message(content="❌ Request **rejected** and **deleted.**", embed=None, view=None)
         applogger.warning(f"Request {self.request_type} #{self.request_id} rejected by {interaction.user} in {interaction.guild.name}")

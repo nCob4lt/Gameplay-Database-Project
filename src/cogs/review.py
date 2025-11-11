@@ -1,3 +1,17 @@
+"""
+ReviewCog module for the Gameplay Database bot.
+
+This cog handles the moderation and review of pending registration requests
+for creators, layouts, collabs, musics, and artists. It provides an interface
+for moderators to view detailed information about the oldest pending request
+and approve or reject it through a Discord UI with interactive buttons.
+
+Classes
+-------
+ReviewCog(commands.Cog)
+    Cog that provides a command to review the next pending database registration request.
+"""
+
 import discord
 from discord.ext import commands
 
@@ -11,12 +25,59 @@ applogger = AppLogger()
 
 class ReviewCog(commands.Cog):
 
+    """
+    Cog responsible for reviewing and managing pending database registration requests.
+
+    Attributes
+    ----------
+    bot : commands.Bot
+        The Discord bot instance used to send messages and interact with the API.
+    """
+
     def __init__(self, bot: commands.Bot):
+
+        """
+        Initialize the ReviewCog with a Discord bot instance.
+
+        Parameters
+        ----------
+        bot : commands.Bot
+            The bot instance this cog will be attached to.
+        """
+
         self.bot = bot
 
     @discord.app_commands.command(name="review_next_request",
                                    description="Displays the oldest pending creator registration request.")
     async def review_next_request(self, interaction: discord.Interaction):
+
+        """
+        Display the oldest pending registration request in the database.
+
+        This command fetches the oldest pending request for creators, layouts, collabs,
+        musics, or artists. The request details are displayed in a Discord embed, with
+        fields dynamically populated based on the type of request. Moderators can
+        interact with the embed using a custom ReviewRequestView to approve or reject
+        the submission.
+
+        The embed contains key details such as submission date, YouTube/SoundCloud links,
+        associated IDs, creator/host names, and any recorder notes.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction object representing the user's slash command invocation.
+
+        Returns
+        -------
+        None
+            Sends a paginated Discord embed with request details and an interactive view.
+        
+        Raises
+        ------
+        DataNotFound
+            If there are no pending requests or if request details cannot be retrieved.
+        """
 
         await tools.check_mod(interaction)
         

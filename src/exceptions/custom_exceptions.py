@@ -75,6 +75,17 @@ class MissingModPermissions(Exception):
 
 class InvalidYouTubeURL(Exception):
 
+    """
+    Exception raised when a provided YouTube URL is invalid or cannot be processed.
+
+    Attributes
+    ----------
+    message : str
+        Description of the exception.
+    timestamp : datetime.datetime
+        The date and time when the exception was instantiated.
+    """
+
     def __init__(self, message):
         super().__init__(message)
         self.timestamp = datetime.now()

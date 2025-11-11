@@ -20,10 +20,6 @@ class RequestRegistrationCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    # ───────────────────────────────
-    # CREATOR REQUEST
-    # ───────────────────────────────
-
     @discord.app_commands.command(
             name="request_creator",
             description="Registers a suggestion entry for the creator table in the Gameplay Database")
@@ -65,10 +61,6 @@ class RequestRegistrationCog(commands.Cog):
 
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
-
-    # ───────────────────────────────
-    # LAYOUT REQUEST
-    # ───────────────────────────────
 
     @discord.app_commands.command(
         name="request_layout",
@@ -145,10 +137,6 @@ class RequestRegistrationCog(commands.Cog):
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
-    # ───────────────────────────────
-    # COLLAB REQUEST
-    # ───────────────────────────────
-
     @discord.app_commands.command(
         name="request_collab",
         description="Registers a suggestion entry for the collab table in the Gameplay Database"
@@ -221,10 +209,6 @@ class RequestRegistrationCog(commands.Cog):
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
-    # ───────────────────────────────
-    # MUSIC REQUEST
-    # ───────────────────────────────
-
     @discord.app_commands.command(
         name="request_music",
         description="Registers a suggestion entry for the music table in the Gameplay Database"
@@ -292,10 +276,6 @@ class RequestRegistrationCog(commands.Cog):
 
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
-
-    # ───────────────────────────────
-    # ARTIST REQUEST
-    # ───────────────────────────────
 
     @discord.app_commands.command(
         name="request_artist",

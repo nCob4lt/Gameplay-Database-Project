@@ -1,3 +1,45 @@
+"""
+ListCog - Discord Bot Cog for Listing Gameplay Database Entries
+
+This module contains the ListCog class, which provides a set of Discord
+slash commands to retrieve and display various objects stored in the
+Gameplay Database. The cog handles layouts, collabs, music, and parts,
+supporting both individual retrieval and paginated listings.
+
+Commands included:
+
+- Layouts:
+    /layouts_from      - List layouts created by a specific creator
+    /layouts_with      - List layouts using a specific music or artist
+    /levels_from       - List all layouts and collabs from a creator
+    /levels_with       - List all layouts and collabs using a music or artist
+
+- Collabs:
+    /collabs_from      - List collabs hosted by a specific user
+    /collabs_with      - List collabs using a specific music or artist
+
+- Music:
+    /musics_from       - List musics registered by a specific artist
+
+- Parts:
+    /parts_from        - List parts created by a specific user
+    /parts_of          - List parts belonging to a specific collab
+
+Features:
+- Paginated embeds for large lists, using the PaginatorView class.
+- Automatic formatting of names, creators/hosts, and YouTube links.
+- Optional thumbnails for musics and collabs when YouTube links exist.
+- Robust error handling with DataNotFound exceptions and logging via AppLogger.
+
+Dependencies:
+- discord.py (app_commands & ui components)
+- database module for SQL queries
+- utilities.tools for YouTube thumbnail/PP retrieval
+- views.PaginatorView for paginated navigation
+
+Author: Cobalt
+"""
+
 import discord
 from discord.ext import commands
 
@@ -11,11 +53,53 @@ applogger = AppLogger()
 
 class ListCog(commands.Cog):
 
+    """
+
+    Cog responsible for retrieving and displaying layouts, collabs, musics, and parts
+    from the Gameplay Database. Provides paginated views for large sets of results
+    and handles error logging for missing or invalid data.
+
+    """
+
     def __init__(self, bot: commands.Bot):
+
+        """
+        Initialize the cog with a reference to the bot.
+
+        Parameters
+        ----------
+        bot : commands.Bot
+            The Discord bot instance.
+        """
+
         self.bot = bot
 
     @discord.app_commands.command(name="layouts_from", description="List the levels registered in the database from the given creator")
     async def layouts_from(self, interaction: discord.Interaction, user: discord.User):
+
+        """
+        List all layouts created by the specified creator.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction object representing the command invocation.
+        user : discord.User
+            The creator whose layouts should be retrieved.
+
+        Behavior
+        --------
+        - Retrieves layouts from the database using the creator's global name.
+        - Paginates results with 10 items per page.
+        - Sends the first page embed with a PaginatorView.
+
+        Exceptions
+        ----------
+        DataNotFound
+            Raised if no layouts exist for the given creator. Sends an ephemeral
+            response and logs the event.
+        """
+
         try:
             get = database.get_layouts_from(user.global_name)
         except DataNotFound:
@@ -42,7 +126,6 @@ class ListCog(commands.Cog):
             embed.set_thumbnail(url=user.avatar)
             embeds.append(embed)
 
-        # Envoi du premier embed avec la vue de pagination
         view = PaginatorView(embeds, interaction.user)
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embeds[0], view=view)
@@ -50,6 +133,29 @@ class ListCog(commands.Cog):
 
     @discord.app_commands.command(name="collabs_from", description="List the collabs registered in the database from the given host")
     async def collabs_from(self, interaction: discord.Interaction, user: discord.User):
+
+        """
+        List all collabs hosted by the given creator.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The command interaction object.
+        user : discord.User
+            The creator whose collabs should be retrieved.
+
+        Behavior
+        --------
+        - Retrieves collabs from the database by creator name.
+        - Paginated embeds with 10 items per page.
+        - Displays YouTube links if available.
+
+        Exceptions
+        ----------
+        DataNotFound
+            Raised if no collabs exist for the creator.
+        """
+
         try:
             get = database.get_collabs_from(user.global_name)
         except DataNotFound:
@@ -77,6 +183,29 @@ class ListCog(commands.Cog):
 
     @discord.app_commands.command(name="parts_from", description="List all collab parts built by the given creator")
     async def parts_from(self, interaction: discord.Interaction, user: discord.User):
+
+        """
+        List all parts of collabs built by the specified creator.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction representing the command invocation.
+        user : discord.User
+            The creator whose parts are being retrieved.
+
+        Behavior
+        --------
+        - Retrieves collab parts from the database.
+        - Shows the original collab for each part.
+        - Paginated display with 10 items per page.
+
+        Exceptions
+        ----------
+        DataNotFound
+            Raised if the creator has no registered parts.
+        """
+
         try:
             get = database.get_parts_from(user.global_name)
         except DataNotFound:
@@ -111,6 +240,32 @@ class ListCog(commands.Cog):
         description="List the musics registered in the database from the given artist"
     )
     async def musics_from(self, interaction: discord.Interaction, artist: str):
+
+        """
+        List all music tracks registered under a given artist.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The command interaction object.
+        artist : str
+            The artist's name to retrieve music from.
+
+        Behavior
+        --------
+        - Retrieves music entries from the database.
+        - Displays links to YouTube and SoundCloud when available.
+        - Displays artist's YouTube profile picture as a thumbnail.
+        - Paginated display with 10 items per page.
+
+        Exceptions
+        ----------
+        DataNotFound
+            Raised if no music exists for the specified artist.
+        InvalidYouTubeURL
+            Raised if the artist's YouTube link cannot be parsed to retrieve a thumbnail.
+        """
+
         try:
             rows = database.get_musics_from(artist)
             musics = [dict(row) for row in rows]
@@ -124,7 +279,6 @@ class ListCog(commands.Cog):
         per_page = 10
         embeds = []
 
-        # Récupération de la PP de l’artiste
         ytpp_url = None
         try:
             artist_rows = database.get_artist_by_name(artist)
@@ -136,7 +290,6 @@ class ListCog(commands.Cog):
                 f"Failed to retrieve YouTube PP for {artist} on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}"
             )
 
-        # Création des embeds paginés
         for i in range(0, len(musics), per_page):
             chunk = musics[i:i+per_page]
             fullstring = ""
@@ -157,7 +310,6 @@ class ListCog(commands.Cog):
 
             embeds.append(embed)
 
-        # Création de la vue de pagination
         view = PaginatorView(embeds, interaction.user)
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embeds[0], view=view)
@@ -167,6 +319,30 @@ class ListCog(commands.Cog):
         description="List every layout and collab registered in the database from the given creator"
     )
     async def levels_from(self, interaction: discord.Interaction, user: discord.User):
+
+        """
+        List all layouts and collabs created by a specific user.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction object representing the command invocation.
+        user : discord.User
+            The creator whose levels (layouts + collabs) should be retrieved.
+
+        Behavior
+        --------
+        - Retrieves all layouts and collabs for the specified creator.
+        - Separates results into layouts and collabs for clarity.
+        - Displays results in paginated embeds with 10 items per page.
+        - Each embed contains the total number of levels and page number.
+
+        Exceptions
+        ----------
+        DataNotFound
+            Raised if no levels exist for the given creator.
+        """
+
         try:
             all_levels = database.get_levels_from(user.global_name)
         except DataNotFound:
@@ -184,7 +360,6 @@ class ListCog(commands.Cog):
             )
             return
 
-        # --- Pagination setup ---
         per_page = 10
         embeds = []
 
@@ -217,7 +392,6 @@ class ListCog(commands.Cog):
 
             embeds.append(embed)
 
-        # --- Envoyer le premier embed avec la vue de pagination ---
         view = PaginatorView(embeds, interaction.user)
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embeds[0], view=view)
@@ -237,6 +411,34 @@ class ListCog(commands.Cog):
         ]
     )
     async def layouts_with(self, interaction: discord.Interaction, choice: discord.app_commands.Choice[str], name: str):
+
+        """
+        List all layouts that utilize a specific music track or are created by a particular artist.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction object representing the command invocation.
+        choice : discord.app_commands.Choice[str]
+            Choice indicating whether to filter by 'music' or 'artist'.
+        name : str
+            The name of the music track or artist.
+
+        Behavior
+        --------
+        - Queries the database based on the selected choice.
+        - Retrieves layouts linked to the specified music or artist.
+        - Paginates results with 10 layouts per embed.
+        - Includes creator/artist name and YouTube thumbnail when available.
+
+        Exceptions
+        ----------
+        DataNotFound
+            Raised if no layouts match the given search criteria.
+        InvalidYouTubeURL
+            Raised if the YouTube link of a music or artist cannot be parsed.
+        """
+
         try:
             if choice.value == "music":
                 all_layouts = database.get_layouts_with_music(name)
@@ -251,7 +453,6 @@ class ListCog(commands.Cog):
             await interaction.response.send_message(f"No **layouts** found for {choice.name.lower()} '{name}'")
             return
 
-        # --- Pagination ---
         per_page = 10
         embeds = []
 
@@ -271,7 +472,6 @@ class ListCog(commands.Cog):
             embed.add_field(name="List", value=fullstring, inline=False)
             embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
 
-            # --- Image / thumbnail ---
             if choice.value == "music":
                 try:
                     getmusic = database.get_music_by_name(name)
@@ -295,7 +495,6 @@ class ListCog(commands.Cog):
 
             embeds.append(embed)
 
-        # --- Envoyer avec pagination ---
         view = PaginatorView(embeds, interaction.user)
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embeds[0], view=view)
@@ -315,6 +514,34 @@ class ListCog(commands.Cog):
         ]
     )
     async def collabs_with(self, interaction: discord.Interaction, choice: discord.app_commands.Choice[str], name: str):
+
+        """
+        List all collabs that include a specific music track or are associated with a particular artist.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction object representing the command invocation.
+        choice : discord.app_commands.Choice[str]
+            Choice indicating whether to filter by 'music' or 'artist'.
+        name : str
+            The name of the music track or artist.
+
+        Behavior
+        --------
+        - Queries the database for collabs filtered by music or artist.
+        - Displays results in paginated embeds (10 items per page).
+        - Each embed contains collab name, host name, and a clickable link.
+        - Attempts to display YouTube thumbnail if available.
+
+        Exceptions
+        ----------
+        DataNotFound
+            Raised if no collabs match the search criteria.
+        InvalidYouTubeURL
+            Raised if the YouTube link cannot be parsed.
+        """
+
         try:
             if choice.value == "music":
                 all_collabs = database.get_collabs_with_music(name)
@@ -329,7 +556,6 @@ class ListCog(commands.Cog):
             await interaction.response.send_message(f"No **collabs** found for {choice.name.lower()} '{name}'")
             return
 
-        # --- Pagination ---
         per_page = 10
         embeds = []
 
@@ -349,7 +575,6 @@ class ListCog(commands.Cog):
             embed.add_field(name="List", value=fullstring, inline=False)
             embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
 
-            # --- Image / thumbnail ---
             if choice.value == "music":
                 try:
                     getmusic = database.get_music_by_name(name)
@@ -373,7 +598,6 @@ class ListCog(commands.Cog):
 
             embeds.append(embed)
 
-        # --- Envoyer avec pagination ---
         view = PaginatorView(embeds, interaction.user)
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embeds[0], view=view)
@@ -394,6 +618,34 @@ class ListCog(commands.Cog):
         ]
     )
     async def levels_with(self, interaction: discord.Interaction, choice: discord.app_commands.Choice[str], name: str):
+
+        """
+        List all levels (layouts + collabs) that include a specific music track or are associated with a specific artist.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction object representing the command invocation.
+        choice : discord.app_commands.Choice[str]
+            Choice indicating whether to filter by 'music' or 'artist'.
+        name : str
+            The name of the music track or artist.
+
+        Behavior
+        --------
+        - Retrieves both layouts and collabs matching the specified music or artist.
+        - Displays results in paginated embeds (10 items per page).
+        - Each embed includes the level name, creator/host, and a clickable link.
+        - Displays thumbnails from YouTube if available.
+
+        Exceptions
+        ----------
+        DataNotFound
+            Raised if no levels match the given search criteria.
+        InvalidYouTubeURL
+            Raised if the YouTube link cannot be parsed.
+        """
+
         try:
             if choice.value == "music":
                 all_levels = database.get_levels_with_music(name)
@@ -408,7 +660,6 @@ class ListCog(commands.Cog):
             await interaction.response.send_message(f"No **levels** found for {choice.name.lower()} '{name}'")
             return
 
-        # --- Pagination ---
         per_page = 10
         embeds = []
 
@@ -428,7 +679,6 @@ class ListCog(commands.Cog):
             embed.add_field(name="List", value=fullstring, inline=False)
             embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
 
-            # --- Image / thumbnail ---
             if choice.value == "music":
                 try:
                     getmusic = database.get_music_by_name(name)
@@ -452,7 +702,6 @@ class ListCog(commands.Cog):
 
             embeds.append(embed)
 
-        # --- Envoyer avec pagination ---
         view = PaginatorView(embeds, interaction.user)
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embeds[0], view=view)
@@ -463,6 +712,31 @@ class ListCog(commands.Cog):
         description="List the parts registered in the database that belong to a specific collab"
     )
     async def parts_of(self, interaction: discord.Interaction, collab_name: str):
+
+        """
+        List all parts associated with a given collab, showing which parts are registered.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The interaction object representing the command invocation.
+        collab_name : str
+            The name of the collab for which to retrieve parts.
+
+        Behavior
+        --------
+        - Retrieves all parts registered under the specified collab.
+        - Displays the total number of parts versus expected total builders.
+        - Shows each part with its creator and optional YouTube link.
+        - If parts are missing, displays a message encouraging requests.
+        - Adds a thumbnail using the collab's YouTube video if available.
+
+        Exceptions
+        ----------
+        DataNotFound
+            Raised if no parts exist for the given collab.
+        """
+
         try:
             parts, total_builders = database.get_parts_of(collab_name)
         except DataNotFound:
