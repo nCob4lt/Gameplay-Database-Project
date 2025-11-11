@@ -162,6 +162,61 @@ class QueryCog(commands.Cog):
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
+    @discord.app_commands.command(
+        name="get_random_layout",
+        description="Retrieves data about a random layout from the database"
+    )
+    async def get_random_layout(self, interaction: discord.Interaction):
+        """
+        Retrieve and display data about a random layout from the database.
+        """
+
+        try:
+            layout = database.get_random_layout()
+        except DataNotFound:
+            await interaction.response.send_message("**No layout** found in the database.")
+            applogger.error(f"Empty response on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
+            return
+
+        embed = discord.Embed(
+            title=f"Layout overview : {layout['name']}",
+            description="Infos (random selected entry)",
+            color=discord.Color.dark_grey()
+        )
+
+        embed.add_field(name="Layout ID (database)", value=layout["id"])
+        embed.add_field(name="Creator ID (database)", value=layout["creator_id"])
+        embed.add_field(name="Creator", value=layout["creator_name"], inline=False)
+        embed.add_field(name="Name", value=layout["name"], inline=False)
+        embed.add_field(name="Type", value=layout["type"], inline=False)
+        embed.add_field(name="Length", value=layout["length"], inline=False)
+        embed.add_field(
+            name="Youtube",
+            value=f"[Open in browser]({layout['yt']})" if layout['yt'] else "No link",
+            inline=False
+        )
+        embed.add_field(name="Music ID (database)", value=layout["music_id"], inline=False)
+        embed.add_field(name="Music NG ID", value=layout["music_ngid"], inline=False)
+        embed.add_field(name="Music name", value=layout["music_name"], inline=False)
+        embed.add_field(name="Artist ID (database)", value=layout["artist_id"])
+        embed.add_field(name="Music artist", value=layout["music_artist"], inline=False)
+        embed.add_field(name="In-game ID", value=layout["igid"], inline=False)
+        embed.add_field(name="Masterlevel", value=layout["masterlevel"], inline=False)
+        embed.add_field(name="Registration date", value=layout["registration_date"], inline=False)
+        embed.add_field(name="Recorder name", value=layout["recorder_name"], inline=False)
+        embed.add_field(name="Recorder notes", value=layout["recorder_notes"], inline=False)
+
+        embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar)
+
+        url = tools.get_youtube_thumbnail(layout["yt"])
+        if url:
+            embed.set_image(url=url)
+
+        applogger.debug_command(interaction)
+        await interaction.response.send_message(embed=embed)
+
+
     @discord.app_commands.command(name="get_collab_by_name", description="Retrieves data about a collab by giving name")
     @discord.app_commands.describe(name="Collab name")
     async def get_collab_by_name(self, interaction: discord.Interaction, name: str):

@@ -540,6 +540,13 @@ def get_artist_by_name(artist_name):
         raise DataNotFound(f"No artist found with name '{artist_name}'")
     return result
 
+def get_random_layout():
+    cursor.execute(''' SELECT * FROM layout ORDER BY RANDOM() LIMIT 1''')
+    result = cursor.fetchone()
+    if not result:
+        raise DataNotFound("Internal error or no layouts registered in the database")
+    return result
+
 def get_layouts_from(creator):
     cursor.execute(''' SELECT name, yt FROM layout WHERE creator_name = ?;''', (creator,))
     result = cursor.fetchall()
