@@ -21,7 +21,7 @@ Author: cobalt
 import discord
 from discord.ext import commands, tasks
 import json
-import os
+import os, sys
 from pathlib import Path
 
 # --- Local imports
@@ -29,6 +29,9 @@ import database
 from utilities.applogger import AppLogger
 from utilities import recovery
 from utilities import tools
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from meta.constants import *
 
 # --- Setup logging and intents ---
 intents = discord.Intents.all()
@@ -352,6 +355,33 @@ class MainCog(commands.Cog):
 
         await interaction.followup.send(embed=embed)
         applogger.debug_command(interaction)
+
+
+    @discord.app_commands.command(
+        name="about",
+        description="Shows general information about the Gameplay Database project"
+    )
+    async def about(self, interaction: discord.Interaction):
+        embed = discord.Embed(
+            title=f"📘 About {PROJECT_NAME}",
+            description="A structured database project for layouts, collabs, and musics in Geometry Dash.",
+            color=DEFAULT_COLOR
+        )
+
+        embed.add_field(name="Version", value=VERSION)
+        embed.add_field(name="Python version", value=PYTHON_VERSION)
+        embed.add_field(name="Developer", value=AUTHOR)
+        embed.add_field(name="Discord.py", value=discord.__version__)
+        embed.add_field(name="Bot latency", value=f"{round(self.bot.latency * 1000)} ms")
+        embed.add_field(name="Total servers", value=f"{len(self.bot.guilds)}", inline=True)
+        embed.add_field(name="Registered users", value=len(self.bot.users), inline=True)
+        embed.add_field(name="GitHub", value=f"[Repository]({GITHUB_URL})")
+        embed.add_field(name="Invite me", value=f"[Add to your server]({BOT_INVITE})")
+
+        embed.set_thumbnail(url=self.bot.user.avatar)
+        embed.set_footer(text=f"{PROJECT_NAME} • Stable Build", icon_url=self.bot.user.avatar)
+
+        await interaction.response.send_message(embed=embed)
 
 
 
