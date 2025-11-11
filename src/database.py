@@ -838,9 +838,15 @@ def synchronize_data():
             missing_data["layout"].append({"id": id, "missing": "music_id", "error": str(e)})
 
         try:
-            context_masterlevel = get_collab_by_name(masterlevel)
-            if context_masterlevel:
-                cursor.execute(''' UPDATE layout SET masterlevel_id = ? WHERE id = ?''', (context_masterlevel[0][0], id,))
+            if masterlevel:
+                context_masterlevel = get_collab_by_name(masterlevel)
+                if context_masterlevel:
+                    cursor.execute(
+                        "UPDATE layout SET masterlevel_id = ? WHERE id = ?",
+                        (context_masterlevel[0][0], id)
+                    )
+                else:
+                    pass
         except Exception as e:
             applogger.warning(f"[LAYOUT:{id}] Failed to update masterlevel_id: {e}")
             missing_data["layout"].append({"id": id, "missing": "masterlevel_id", "error": str(e)})
