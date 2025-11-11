@@ -30,6 +30,7 @@ class RequestRegistrationCog(commands.Cog):
     @discord.app_commands.describe(
         user="Discord user to request registration",
         nationality="User's nationality",
+        gdusername="Creator's in-game username",
         yt="Youtube link to their channel")
 
     async def request_creator(
@@ -37,12 +38,13 @@ class RequestRegistrationCog(commands.Cog):
         interaction: discord.Interaction,
         user: discord.User,
         nationality: str,
+        gdusername: str,
         yt: str = None
         ):
 
         registrator = interaction.user.name
         await database.database_queue.put((database.register_request_creator,
-                                          (user.global_name, nationality, user.name, user.id, yt, registrator),
+                                          (user.global_name, nationality, user.name, user.id, yt, gdusername, registrator),
                                           {}))
         
         embed = discord.Embed(

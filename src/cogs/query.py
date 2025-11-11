@@ -93,6 +93,7 @@ class QueryCog(commands.Cog):
         embed.add_field(name="Discord", value=creator["discord"], inline=False)
         embed.add_field(name="Discord user ID", value=creator["discord_uid"], inline=False)
         embed.add_field(name="Youtube", value=f"[Open in browser]({creator['yt']})" if creator['yt'] else None, inline=False)
+        embed.add_field(name="In-game username", value=creator["gdusername"], inline=False)
         embed.add_field(name="Layouts registered", value=creator["layouts_registered"], inline=False)
         embed.add_field(name="Collab participations", value=creator["collab_participations"], inline=False)
         embed.add_field(name="Total time built", value=creator["total_time_built"], inline=False)

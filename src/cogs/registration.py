@@ -62,8 +62,9 @@ class RegistrationCog(commands.Cog):
     @discord.app_commands.command(name="add_creator", description="Adds directly a creator and its info into the database (prior confirmation)")
     @discord.app_commands.describe(user="Creator discord user (discord mention expected)")
     @discord.app_commands.describe(nationality="Creator nationality (prior confirmation)")
+    @discord.app_commands.describe(gdusername="Creator's in-game username")
     @discord.app_commands.describe(yt="Youtube link to their channel (leave blank if none)")
-    async def add_creator(self, interaction: discord.Interaction, user: discord.User, nationality: str, yt: str = None):
+    async def add_creator(self, interaction: discord.Interaction, user: discord.User, nationality: str, gdusername: str, yt: str = None):
 
         """
 
@@ -86,7 +87,7 @@ class RegistrationCog(commands.Cog):
             
         registrator = interaction.user.name
         await database.database_queue.put((database.register_creator,
-                                            (user.global_name, nationality, user.name, user.id, yt, registrator,),
+                                            (user.global_name, nationality, user.name, user.id, yt, gdusername, registrator,),
                                               {}))
 
         embed = discord.Embed(

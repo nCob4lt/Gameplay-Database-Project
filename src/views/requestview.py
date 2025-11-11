@@ -37,6 +37,7 @@ class ReviewRequestView(discord.ui.View):
                         details["discord"],
                         details["discord_uid"],
                         details["yt"],
+                        details["gdusername"],
                         interaction.user.name,  # registrator
                     ),
                     {}

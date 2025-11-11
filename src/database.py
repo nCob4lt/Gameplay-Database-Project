@@ -91,6 +91,7 @@ def initialize():
                    discord TEXT UNIQUE,
                    discord_uid TEXT UNIQUE,
                    yt TEXT,
+                   gdusername TEXT,
                    layouts_registered INTEGER DEFAULT 0,
                    collab_participations INTEGER DEFAULT 0,
                    total_time_built INTEGER DEFAULT 0,
@@ -173,6 +174,7 @@ def initialize():
                    discord TEXT UNIQUE,
                    discord_uid TEXT UNIQUE,
                    yt TEXT,
+                   gdusername TEXT,
                    registration_date TEXT,
                    recorder_name TEXT);''')
     
@@ -258,7 +260,7 @@ def clear():
 
 # -------------------- REGISTRATION FUNCTIONS --------------------
    
-def register_creator(username, nationality, discord_uname, discord_uid, yt, registrator):
+def register_creator(username, nationality, discord_uname, discord_uid, yt, gdusername, registrator):
 
     """
 
@@ -288,9 +290,10 @@ def register_creator(username, nationality, discord_uname, discord_uid, yt, regi
                     discord,
                     discord_uid,
                     yt,
+                    gdusername,
                     registration_date,
-                    recorder_name) VALUES (?,?,?,?,?,?,?);''',
-                    (username, nationality, discord_uname, discord_uid, yt, dt, registrator))
+                    recorder_name) VALUES (?,?,?,?,?,?,?,?);''',
+                    (username, nationality, discord_uname, discord_uid, yt, gdusername, dt, registrator))
     
     connection.commit()
 
@@ -379,7 +382,7 @@ def register_artist(name, yt, soundcloud, registrator, recorder_notes):
     
     connection.commit()
 
-def register_request_creator(username, nationality, discord_uname, discord_uid, yt, registrator):
+def register_request_creator(username, nationality, discord_uname, discord_uid, yt, gdusername, registrator):
 
     dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -389,10 +392,11 @@ def register_request_creator(username, nationality, discord_uname, discord_uid, 
                         discord,
                         discord_uid,
                         yt,
+                        gdusername,
                         registration_date,
                         recorder_name
-                      ) VALUES (?,?,?,?,?,?,?);''',
-                   (username, nationality, discord_uname, discord_uid, yt, dt, registrator))
+                      ) VALUES (?,?,?,?,?,?,?,?);''',
+                   (username, nationality, discord_uname, discord_uid, yt, gdusername, dt, registrator))
     
     connection.commit()
 
