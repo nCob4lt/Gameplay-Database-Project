@@ -55,9 +55,9 @@ class QueryCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @discord.app_commands.command(name="get_creator_by_name", description="Retrieves data about a creator by giving name")
+    @discord.app_commands.command(name="get_creator_by_discord", description="Retrieves data about a creator by giving discord username")
     @discord.app_commands.describe(user="Creator username (discord)")
-    async def get_creator_by_name(self, interaction: discord.Interaction, user: discord.User):
+    async def get_creator_by_discord(self, interaction: discord.Interaction, user: discord.User):
 
         """
 
@@ -104,6 +104,62 @@ class QueryCog(commands.Cog):
         embed.set_thumbnail(url=self.bot.user.avatar)
 
         embed.set_image(url=user.avatar)
+
+        applogger.debug_command(interaction)
+        await interaction.response.send_message(embed=embed)
+
+    @discord.app_commands.command(name="get_creator_by_name", description="Retrieves data about a creator by giving name")
+    @discord.app_commands.describe(name="Creator username")
+    async def get_creator_by_name(self, interaction: discord.Interaction, name: str):
+
+        """
+
+        Retrieve and display a creator's information by Discord username.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            The Discord interaction context for this command.
+        user : discord.User
+            The Discord user object of the creator.
+
+        """
+        
+        try:
+            get = database.get_creator_by_name(name)
+        except DataNotFound:
+            await interaction.response.send_message("**User** not found.")
+            applogger.error(f"Empty response on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
+            return
+        
+        creator = get[0]
+
+        embed = discord.Embed(
+            title=f"Creator overview : {creator['username']}",
+            description="Infos",
+            color=discord.Color.dark_grey()
+        )
+
+        embed.add_field(name="Creator ID (database)", value=creator["id"], inline=False)
+        embed.add_field(name="Username", value=creator["username"], inline=False)
+        embed.add_field(name="Nationality", value=creator["nationality"], inline=False)
+        embed.add_field(name="Discord", value=creator["discord"], inline=False)
+        embed.add_field(name="Discord user ID", value=creator["discord_uid"], inline=False)
+        embed.add_field(name="Youtube", value=f"[Open in browser]({creator['yt']})" if creator['yt'] else None, inline=False)
+        embed.add_field(name="In-game username", value=creator["gdusername"], inline=False)
+        embed.add_field(name="Layouts registered", value=creator["layouts_registered"], inline=False)
+        embed.add_field(name="Collab participations", value=creator["collab_participations"], inline=False)
+        embed.add_field(name="Total time built", value=creator["total_time_built"], inline=False)
+        embed.add_field(name="Registration date", value=creator["registration_date"], inline=False)
+        embed.add_field(name="Recorder name", value=creator["recorder_name"], inline=False)
+
+        embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
+        embed.set_thumbnail(url=self.bot.user.avatar)
+
+        if creator["discord"]:
+            user = discord.utils.get(interaction.guild.members, name=creator["discord"])
+            if user:
+                embed.set_image(url=user.avatar)
 
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)

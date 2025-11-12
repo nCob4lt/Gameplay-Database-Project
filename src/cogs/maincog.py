@@ -478,13 +478,14 @@ class MainCog(commands.Cog):
         None
             Sends the first embed with a paginated view for browsing all commands.
         """
-        
+
         embeds = []
 
         groups = {
             "📝 Retrieving object": [
                 ("/get_artist_by_name", "Retrieve an artist by name"),
                 ("/get_collab_by_name", "Retrieve a collab by name"),
+                ("/get_creator_by_discord", "Retrieve a creator by discord username"),
                 ("/get_creator_by_name", "Retrieve a creator by name"),
                 ("/get_layout_by_name", "Retrieve a layout by name"),
                 ("/get_music_by_name", "Retrieve a music by name"),
@@ -516,6 +517,7 @@ class MainCog(commands.Cog):
             "🔧 Mod actions": [
                 ("/add_artist", "Add a new artist to the database"),
                 ("/add_collab", "Add a new collab to the database"),
+                ("/add_creator", "Add a new creator to the database"),
                 ("/add_layout", "Add a new layout to the database"),
                 ("/add_music", "Add a new music to the database"),
                 ("/review_next_request", "Review the next pending registration request")

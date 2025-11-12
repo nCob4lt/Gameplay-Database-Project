@@ -4,6 +4,7 @@ Constants for the Gameplay Database Project
 
 """
 
+import re
 import discord
 
 PROJECT_NAME = "Gameplay Database"
@@ -17,3 +18,4 @@ DEFAULT_COLOR = discord.Color.dark_grey()
 DB_PATH = "data/gpdb.db"
 LOG_PATH = "logs/latest.log"
 ITEMS_PER_PAGE = 10
+MENTION_REGEX = re.compile(r"<@!?(\d+)>")

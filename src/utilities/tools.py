@@ -22,14 +22,18 @@ Author: cobalt
 import re
 import requests
 from urllib.parse import urlparse, parse_qs
-import os
+import os, sys
 import discord
 import json
 from pathlib import Path
+from typing import Union
 
 # --- Local imports ---
 from exceptions.custom_exceptions import *
 from utilities.applogger import AppLogger
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from meta.constants import *
 
 # --- Global setup ---
 YOUTUBE_API_KEY = os.getenv("GPDB_YT_API_KEY")
@@ -325,5 +329,47 @@ async def check_mod(interaction: discord.Interaction):
     if interaction.user.id not in data.get("mods", []):
         applogger.error(f" Unauthorized user {interaction.user.name} tried to use mod command {interaction.command.name} in {interaction.guild.name} (user was not found in the whitelist)")
         raise MissingModPermissions("Interaction user was not found in the mod whitelist")
+
+async def resolve_user(input_value: str, interaction: discord.Interaction) -> Union[discord.User, str]:
+    
+    """
+    Resolves a given input (mention, ID, or username string) into a Discord User object if possible.
+
+    Parameters
+    ----------
+    input_value : str
+        The input provided by the command user (can be a mention like <@123456789>, a raw ID, or a name).
+    interaction : discord.Interaction
+        The Discord interaction context used to access guild members and bot methods.
+
+    Returns
+    -------
+    Union[discord.User, str]
+        Returns a discord.Member or discord.User object if successfully resolved,
+        otherwise returns the original string.
+    """
+
+    if input_value.startswith("<@") and input_value.endswith(">"):
+        user_id = input_value.strip("<@!>")
+        member = discord.utils.get(interaction.guild.members, id=int(user_id))
+        if member:
+            return member
+        try:
+            return await interaction.client.fetch_user(int(user_id))
+        except Exception:
+            return input_value
+
+
+    if input_value.isdigit():
+        member = discord.utils.get(interaction.guild.members, id=int(input_value))
+        if member:
+            return member
+        try:
+            return await interaction.client.fetch_user(int(input_value))
+        except Exception:
+            return input_value
+
+    return input_value
+
 
         

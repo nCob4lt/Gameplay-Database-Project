@@ -60,11 +60,11 @@ class RegistrationCog(commands.Cog):
         self.bot = bot
 
     @discord.app_commands.command(name="add_creator", description="Adds directly a creator and its info into the database (prior confirmation)")
-    @discord.app_commands.describe(user="Creator discord user (discord mention expected)")
+    @discord.app_commands.describe(user="Creator username (String or discord mention expected (always prioritize discord mention))")
     @discord.app_commands.describe(nationality="Creator nationality (prior confirmation)")
     @discord.app_commands.describe(gdusername="Creator's in-game username")
     @discord.app_commands.describe(yt="Youtube link to their channel (leave blank if none)")
-    async def add_creator(self, interaction: discord.Interaction, user: discord.User, nationality: str, gdusername: str, yt: str = None):
+    async def add_creator(self, interaction: discord.Interaction, user: str, nationality: str, gdusername: str, yt: str = None):
 
         """
 
@@ -85,10 +85,26 @@ class RegistrationCog(commands.Cog):
 
         await tools.check_mod(interaction)
             
+        # Try to resolve mention into a discord.User
+        resolved_user = await tools.resolve_user(user, interaction)
+
+        if isinstance(resolved_user, (discord.User, discord.Member)):
+            username = resolved_user.global_name
+            discord_uname = resolved_user.name
+            discord_uid = resolved_user.id
+        else:
+            username = resolved_user
+            discord_uname = None
+            discord_uid = None
+
         registrator = interaction.user.name
-        await database.database_queue.put((database.register_creator,
-                                            (user.global_name, nationality, user.name, user.id, yt, gdusername, registrator,),
-                                              {}))
+
+       
+        await database.database_queue.put((
+            database.register_creator,
+            (username, nationality, discord_uname, discord_uid, yt, gdusername, registrator), {}
+        ))
+
 
         embed = discord.Embed(
                 title="Registration (mod action)",
@@ -96,10 +112,11 @@ class RegistrationCog(commands.Cog):
                 color=discord.Color.dark_grey()
             )
         
-        embed.add_field(name="Username", value=user.global_name, inline=False)
+        embed.add_field(name="Username", value=username, inline=False)
         embed.add_field(name="Nationality", value=nationality, inline=False)
-        embed.add_field(name="Discord username", value=user.name, inline=False)
+        embed.add_field(name="Discord username", value=discord_uname, inline=False)
         embed.add_field(name="Youtube", value=f"[Open in browser]({yt})" if yt else None, inline=False)
+        embed.add_field(name="GD Username", value=gdusername, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
@@ -108,22 +125,27 @@ class RegistrationCog(commands.Cog):
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
-    @discord.app_commands.command(name="add_layout", description="Adds directly a layout and its info into the database (prior confirmation)")
-    @discord.app_commands.describe(creator="Creator of the layout (discord mention expected)")
-    @discord.app_commands.describe(name="Name of the layout")
-    @discord.app_commands.describe(length="Length of the layout")
-    @discord.app_commands.describe(yt="Youtube link of the layout")
-    @discord.app_commands.describe(music_name="Name of the music used")
-    @discord.app_commands.describe(music_artist="Name of the artist that created the music")
-    @discord.app_commands.describe(music_ngid="Newgrounds ID of the music (leave blank if unavailable)")
-    @discord.app_commands.describe(type="Type of gameplay used/represented in the layout (speedcore, atmospheric, flow etc... leave blank if unsure)")
-    @discord.app_commands.describe(igid="In-game ID of the layout (leave blank if not on servers)")
-    @discord.app_commands.describe(masterlevel="The collab the part belongs to, if it is one, if not, leave blank")
-    @discord.app_commands.describe(recorder_notes="Write anything you want about this layout right here")
+    @discord.app_commands.command(
+        name="add_layout",
+        description="Adds directly a layout and its info into the database (prior confirmation)"
+    )
+    @discord.app_commands.describe(
+        creator="Creator of the layout (mention (always prioritize discord mention) or name)",
+        name="Name of the layout",
+        length="Length of the layout",
+        yt="YouTube link of the layout",
+        music_name="Name of the music used",
+        music_artist="Name of the artist that created the music",
+        music_ngid="Newgrounds ID of the music (leave blank if unavailable)",
+        type="Type of gameplay used/represented (speedcore, atmospheric, flow, etc.)",
+        igid="In-game ID of the layout (leave blank if not on servers)",
+        masterlevel="The collab this layout belongs to (leave blank if none)",
+        recorder_notes="Write anything you want about this layout right here"
+    )
     async def add_layout(
         self,
         interaction: discord.Interaction,
-        creator: discord.User,
+        creator: str,
         name: str,
         length: str,
         yt: str,
@@ -133,46 +155,75 @@ class RegistrationCog(commands.Cog):
         type: str = None,
         igid: int = None,
         masterlevel: str = None,
-        recorder_notes: str = None):
-
+        recorder_notes: str = None
+    ):
         """
+        Adds a new layout entry to the database.
 
-        Add a layout entry to the database.
-
-        This command registers a new gameplay layout and links it with its creator, music, and metadata.
-
+        This command registers a new gameplay layout and links it with its creator, 
+        music, and metadata. It accepts either a Discord mention, an ID, or a plain 
+        text name for the creator field.
         """
 
         await tools.check_mod(interaction)
+
+
         try:
             await tools.is_valid_duration(length)
         except InvalidDurationFormat:
-            await interaction.response.send_message("**Invalid** duration format. Corrrect format : __**x**h**y**min**z**s__")
-            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
+            await interaction.response.send_message(
+                "**Invalid** duration format. Correct format: __**x**h**y**min**z**s__"
+            )
+            applogger.error(
+                f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}"
+            )
             return
-        
-        registrator = interaction.user.name
-        await database.database_queue.put((database.register_layout,
-                                            (creator.global_name, name, length, yt, music_name, music_artist, music_ngid, type, igid, masterlevel, recorder_notes, registrator,),
-                                              {}))
 
+        resolved_creator = await tools.resolve_user(creator, interaction)
+        registrator = interaction.user.name
+
+        if isinstance(resolved_creator, (discord.User, discord.Member)):
+            creator_name = str(resolved_creator.global_name)
+        else:
+            creator_name = str(resolved_creator)
+
+        await database.database_queue.put((
+            database.register_layout,
+            (
+                creator_name,
+                name,
+                length,
+                yt,
+                music_name,
+                music_artist,
+                music_ngid,
+                type,
+                igid,
+                masterlevel,
+                recorder_notes,
+                registrator,
+            ),
+            {}
+        ))
+
+        # Création de l’embed
         embed = discord.Embed(
             title="Registration (mod action)",
-            description="Layout successffully registered",
+            description="Layout successfully registered",
             color=discord.Color.dark_grey()
         )
 
-        embed.add_field(name="Creator", value=creator.global_name, inline=False)
+        embed.add_field(name="Creator", value=creator_name, inline=False)
         embed.add_field(name="Name", value=name, inline=False)
         embed.add_field(name="Length", value=length, inline=False)
-        embed.add_field(name="Youtube link", value=f"[Open in browser]({yt})" if yt else None, inline=False)
+        embed.add_field(name="YouTube link", value=f"[Open in browser]({yt})" if yt else "None", inline=False)
         embed.add_field(name="Music name", value=music_name, inline=False)
         embed.add_field(name="Music artist", value=music_artist, inline=False)
-        embed.add_field(name="Music NG ID", value=music_ngid, inline=False)
-        embed.add_field(name="Type", value=type, inline=False)
-        embed.add_field(name="In-game ID", value=igid, inline=False)
-        embed.add_field(name="Masterlevel", value=masterlevel, inline=False)
-        embed.add_field(name="Recorder notes", value=recorder_notes, inline=False)
+        embed.add_field(name="Music NG ID", value=music_ngid or "None", inline=False)
+        embed.add_field(name="Type", value=type or "None", inline=False)
+        embed.add_field(name="In-game ID", value=igid or "None", inline=False)
+        embed.add_field(name="Masterlevel", value=masterlevel or "None", inline=False)
+        embed.add_field(name="Recorder notes", value=recorder_notes or "None", inline=False)
         embed.add_field(name="Recorder name", value=registrator, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
@@ -182,21 +233,26 @@ class RegistrationCog(commands.Cog):
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
 
-    @discord.app_commands.command(name="add_collab", description="Adds directly a collab and its info into the database (prior confirmation)")
-    @discord.app_commands.describe(host="Collab host (discord mention expected)")
-    @discord.app_commands.describe(name="Name of the collab")
-    @discord.app_commands.describe(builders_number="Number of builders that participated in the collab")
-    @discord.app_commands.describe(length="Length of the collab")
-    @discord.app_commands.describe(yt="Youtube link of the collab")
-    @discord.app_commands.describe(music_name="Name of the music used")
-    @discord.app_commands.describe(music_artist="Name of the artist that created the music")
-    @discord.app_commands.describe(music_ngid="Newgrounds ID of the music (leave blank if unavailable)")
-    @discord.app_commands.describe(igid="In-game ID of the collab (leave blank if not on servers)")
-    @discord.app_commands.describe(recorder_notes="Write anything you want about this collab right here")
+    @discord.app_commands.command(
+        name="add_collab",
+        description="Adds directly a collab and its info into the database (prior confirmation)"
+    )
+    @discord.app_commands.describe(
+        host="Collab host (mention (always prioritize discord mention) or name)",
+        name="Name of the collab",
+        builders_number="Number of builders that participated in the collab",
+        length="Length of the collab",
+        yt="YouTube link of the collab",
+        music_name="Name of the music used",
+        music_artist="Name of the artist that created the music",
+        music_ngid="Newgrounds ID of the music (leave blank if unavailable)",
+        igid="In-game ID of the collab (leave blank if not on servers)",
+        recorder_notes="Write anything you want about this collab right here"
+    )
     async def add_collab(
         self, 
         interaction: discord.Interaction, 
-        host: discord.User, 
+        host: str, 
         name: str, 
         builders_number: int, 
         length: str, 
@@ -205,45 +261,75 @@ class RegistrationCog(commands.Cog):
         music_artist: str, 
         music_ngid: int = None, 
         igid: int = None, 
-        recorder_notes: str = None):
-
+        recorder_notes: str = None
+    ):
         """
+        Adds a new collaboration entry to the database.
 
-        Add a collaboration entry to the database.
-
-        A collab represents a level created by multiple builders, typically hosted by a single creator.
-
+        This command registers a collab (a multi-creator layout) and associates it
+        with its host, music, and metadata. It accepts a Discord mention, ID, or plain
+        string for the `host` field.
         """
 
         await tools.check_mod(interaction)
+
+        # Validate the duration format
         try:
             await tools.is_valid_duration(length)
         except InvalidDurationFormat:
-            await interaction.response.send_message("**Invalid** duration format. Corrrect format : __**x**h**y**min**z**s__")
-            applogger.error(f"Invalid duration format on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
+            await interaction.response.send_message(
+                "**Invalid** duration format. Correct format: __**x**h**y**min**z**s__"
+            )
+            applogger.error(
+                f"Invalid duration format on {interaction.command.name} run by {interaction.user.name} in {interaction.guild.name}"
+            )
             return
 
+        # Resolve host (mention / ID / string)
+        resolved_host = await tools.resolve_user(host, interaction)
         registrator = interaction.user.name
-        await database.database_queue.put((database.register_collab,
-                                            (host.global_name, name, builders_number, length, yt, music_name, music_artist, music_ngid, igid, registrator, recorder_notes,),
-                                              {}))
 
+        if isinstance(resolved_host, (discord.User, discord.Member)):
+            host_name = str(resolved_host.global_name)
+        else:
+            host_name = str(resolved_host)
+
+        # Add to database queue
+        await database.database_queue.put((
+            database.register_collab,
+            (
+                host_name,
+                name,
+                builders_number,
+                length,
+                yt,
+                music_name,
+                music_artist,
+                music_ngid,
+                igid,
+                registrator,
+                recorder_notes,
+            ),
+            {}
+        ))
+
+        # Build confirmation embed
         embed = discord.Embed(
             title="Registration (mod action)",
             description="Collab successfully registered",
             color=discord.Color.dark_grey()
         )
 
-        embed.add_field(name="Host", value=host, inline=False)
+        embed.add_field(name="Host", value=host_name, inline=False)
         embed.add_field(name="Name", value=name, inline=False)
         embed.add_field(name="Builders number", value=builders_number, inline=False)
         embed.add_field(name="Length", value=length, inline=False)
-        embed.add_field(name="Youtube link", value=f"[Open in browser]({yt})" if yt else None, inline=False)
+        embed.add_field(name="YouTube link", value=f"[Open in browser]({yt})" if yt else "None", inline=False)
         embed.add_field(name="Music name", value=music_name, inline=False)
         embed.add_field(name="Music artist", value=music_artist, inline=False)
-        embed.add_field(name="Music NG ID", value=music_ngid, inline=False)
-        embed.add_field(name="In-game ID", value=igid, inline=False)
-        embed.add_field(name="Recorder notes", value=recorder_notes, inline=False)
+        embed.add_field(name="Music NG ID", value=music_ngid or "None", inline=False)
+        embed.add_field(name="In-game ID", value=igid or "None", inline=False)
+        embed.add_field(name="Recorder notes", value=recorder_notes or "None", inline=False)
         embed.add_field(name="Recorder name", value=registrator, inline=False)
 
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
@@ -252,6 +338,7 @@ class RegistrationCog(commands.Cog):
 
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embed)
+
 
     @discord.app_commands.command(name="add_music", description="Adds directly a music track and its info into the database (prior confirmation)")
     @discord.app_commands.describe(name="Name of the music")
