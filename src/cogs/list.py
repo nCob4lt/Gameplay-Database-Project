@@ -75,7 +75,7 @@ class ListCog(commands.Cog):
         self.bot = bot
 
     @discord.app_commands.command(name="layouts_from", description="List the levels registered in the database from the given creator")
-    async def layouts_from(self, interaction: discord.Interaction, user: discord.User):
+    async def layouts_from(self, interaction: discord.Interaction, user: str):
 
         """
         List all layouts created by the specified creator.
@@ -100,10 +100,17 @@ class ListCog(commands.Cog):
             response and logs the event.
         """
 
+        resolved_user = await tools.resolve_user(user, interaction)
+
+        if isinstance(resolved_user, (discord.User, discord.Member)):
+            usrname = str(resolved_user.global_name)
+        else:
+            usrname = str(user)
+
         try:
-            get = database.get_layouts_from(user.global_name)
+            get = database.get_layouts_from(usrname)
         except DataNotFound:
-            await interaction.response.send_message(f"No **levels** from {user.global_name}")
+            await interaction.response.send_message(f"No **levels** from {usrname}")
             applogger.error(f"Empty response on {interaction.command.name} used by {interaction.user.name} in {interaction.guild.name}")
             return
 
@@ -117,13 +124,14 @@ class ListCog(commands.Cog):
                 fullstring += f"**{level['name']}** | [Open in browser]({level['yt']})\n"
 
             embed = discord.Embed(
-                title=f"Levels created by {user.global_name}",
+                title=f"Levels created by {usrname}",
                 description=f"Total : {len(get)} (Page {i//per_page + 1}/{(len(get) - 1)//per_page + 1})",
                 color=discord.Color.dark_grey()
             )
             embed.add_field(name="List", value=fullstring, inline=False)
             embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
-            embed.set_thumbnail(url=user.avatar)
+            if isinstance(resolved_user, (discord.User, discord.Member)):
+                embed.set_thumbnail(url=resolved_user.avatar)
             embeds.append(embed)
 
         view = PaginatorView(embeds, interaction.user)
@@ -132,7 +140,7 @@ class ListCog(commands.Cog):
 
 
     @discord.app_commands.command(name="collabs_from", description="List the collabs registered in the database from the given host")
-    async def collabs_from(self, interaction: discord.Interaction, user: discord.User):
+    async def collabs_from(self, interaction: discord.Interaction, user: str):
 
         """
         List all collabs hosted by the given creator.
@@ -156,10 +164,17 @@ class ListCog(commands.Cog):
             Raised if no collabs exist for the creator.
         """
 
+        resolved_user = await tools.resolve_user(user, interaction)
+
+        if isinstance(resolved_user, (discord.User, discord.Member)):
+            usrname = str(resolved_user.global_name)
+        else:
+            usrname = str(user)
+
         try:
-            get = database.get_collabs_from(user.global_name)
+            get = database.get_collabs_from(usrname)
         except DataNotFound:
-            await interaction.response.send_message(f"No **collabs** from {user.global_name}")
+            await interaction.response.send_message(f"No **collabs** from {usrname}")
             applogger.error(f"Empty response on {interaction.command.name}")
             return
 
@@ -169,20 +184,21 @@ class ListCog(commands.Cog):
             chunk = get[i:i+per_page]
             description = "\n".join(f"**{collab['name']}** | [Open in browser]({collab['yt']})" for collab in chunk)
             embed = discord.Embed(
-                title=f"Collabs hosted by {user.global_name}",
+                title=f"Collabs hosted by {usrname}",
                 description=f"Total : {len(get)} (Page {i//per_page + 1}/{(len(get) - 1)//per_page + 1})",
                 color=discord.Color.dark_grey()
             )
             embed.add_field(name="List", value=description, inline=False)
             embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
-            embed.set_thumbnail(url=user.avatar)
+            if isinstance(resolved_user, (discord.User, discord.Member)):
+                embed.set_thumbnail(url=resolved_user.avatar)
             embeds.append(embed)
 
         applogger.debug_command(interaction)
         await interaction.response.send_message(embed=embeds[0], view=PaginatorView(embeds, interaction.user))
 
     @discord.app_commands.command(name="parts_from", description="List all collab parts built by the given creator")
-    async def parts_from(self, interaction: discord.Interaction, user: discord.User):
+    async def parts_from(self, interaction: discord.Interaction, user: str):
 
         """
         List all parts of collabs built by the specified creator.
@@ -205,11 +221,16 @@ class ListCog(commands.Cog):
         DataNotFound
             Raised if the creator has no registered parts.
         """
+        resolved_user = await tools.resolve_user(user, interaction)
+        if isinstance(resolved_user, (discord.User, discord.Member)):
+            usrname = str(resolved_user.global_name)
+        else:
+            usrname = str(user)
 
         try:
-            get = database.get_parts_from(user.global_name)
+            get = database.get_parts_from(usrname)
         except DataNotFound:
-            await interaction.response.send_message(f"No **collab parts** from {user.global_name}")
+            await interaction.response.send_message(f"No **collab parts** from {usrname}")
             applogger.error(f"Empty response on {interaction.command.name}")
             return
 
@@ -222,13 +243,14 @@ class ListCog(commands.Cog):
                 for p in chunk
             )
             embed = discord.Embed(
-                title=f"Collab parts built by {user.global_name}",
+                title=f"Collab parts built by {usrname}",
                 description=f"Total : {len(get)} (Page {i//per_page + 1}/{(len(get) - 1)//per_page + 1})",
                 color=discord.Color.dark_grey()
             )
             embed.add_field(name="List", value=description, inline=False)
             embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
-            embed.set_thumbnail(url=user.avatar)
+            if isinstance(resolved_user, (discord.User, discord.Member)):
+                embed.set_thumbnail(url=resolved_user.avatar)
             embeds.append(embed)
 
         applogger.debug_command(interaction)
@@ -318,7 +340,7 @@ class ListCog(commands.Cog):
         name="levels_from",
         description="List every layout and collab registered in the database from the given creator"
     )
-    async def levels_from(self, interaction: discord.Interaction, user: discord.User):
+    async def levels_from(self, interaction: discord.Interaction, user: str):
 
         """
         List all layouts and collabs created by a specific user.
@@ -343,11 +365,17 @@ class ListCog(commands.Cog):
             Raised if no levels exist for the given creator.
         """
 
+        resolved_user = await tools.resolve_user(user, interaction)
+        if isinstance(resolved_user, (discord.User, discord.Member)):
+            usrname = str(resolved_user.global_name)
+        else:
+            usrname = str(user)
+
         try:
-            all_levels = database.get_levels_from(user.global_name)
+            all_levels = database.get_levels_from(usrname)
         except DataNotFound:
             await interaction.response.send_message(
-                f"No **levels** (layouts or collabs) from {user.global_name}"
+                f"No **levels** (layouts or collabs) from {usrname}"
             )
             applogger.error(
                 f"Empty response on {interaction.command.name} used by {interaction.user.name} in {interaction.guild.name}"
@@ -356,7 +384,7 @@ class ListCog(commands.Cog):
 
         if not all_levels:
             await interaction.response.send_message(
-                f"No **levels** found for {user.global_name}"
+                f"No **levels** found for {usrname}"
             )
             return
 
@@ -370,7 +398,7 @@ class ListCog(commands.Cog):
             collabs = [lvl for lvl in chunk if lvl['type'] == 'collab']
 
             embed = discord.Embed(
-                title=f"Levels from {user.global_name}",
+                title=f"Levels from {usrname}",
                 description=f"Total: {len(all_levels)} (Page {i//per_page + 1}/{(len(all_levels)-1)//per_page + 1})",
                 color=discord.Color.dark_grey()
             )
@@ -388,7 +416,8 @@ class ListCog(commands.Cog):
                 embed.add_field(name=f"Collabs ({len(collabs)})", value=collab_str, inline=False)
 
             embed.set_footer(text="Gameplay Database", icon_url=self.bot.user.avatar)
-            embed.set_thumbnail(url=user.avatar)
+            if isinstance(resolved_user, (discord.User, discord.Member)):
+                embed.set_thumbnail(url=resolved_user.avatar)
 
             embeds.append(embed)
 

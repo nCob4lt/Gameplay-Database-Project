@@ -368,6 +368,14 @@ async def resolve_user(input_value: str, interaction: discord.Interaction) -> Un
             return await interaction.client.fetch_user(int(input_value))
         except Exception:
             return input_value
+        
+    lower_input = input_value.lower()
+    for member in interaction.guild.members:
+        if (
+            (member.global_name and member.global_name.lower() == lower_input)
+            or (member.name.lower() == lower_input)
+        ):
+            return member
 
     return input_value
 
