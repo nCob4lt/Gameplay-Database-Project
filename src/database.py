@@ -808,10 +808,10 @@ def synchronize_data():
         
     # --- Update layout, collab, and music IDs ---
 
-    cursor.execute(''' SELECT id, creator_name, music_name, music_artist, masterlevel FROM layout WHERE creator_id IS NULL OR artist_id IS NULL OR music_id IS NULL OR masterlevel_id IS NULL; ''')
+    cursor.execute(''' SELECT id, name, creator_name, music_name, music_artist, masterlevel FROM layout WHERE creator_id IS NULL OR artist_id IS NULL OR music_id IS NULL OR masterlevel_id IS NULL; ''')
     layouts = cursor.fetchall()
 
-    for id, creator_name, music_name, music_artist, masterlevel in layouts:
+    for id, name, creator_name, music_name, music_artist, masterlevel in layouts:
 
         try:
             context_creator = get_creator_by_name(creator_name)
@@ -819,7 +819,7 @@ def synchronize_data():
                 cursor.execute(''' UPDATE layout SET creator_id = ? WHERE id = ?; ''', (context_creator[0][0], id,))
         except Exception as e:
             applogger.warning(f"[LAYOUT:{id}] Failed to update creator_id: {e}")
-            missing_data["layout"].append({"id": id, "missing": "creator_id", "error": str(e)})
+            missing_data["layout"].append({"id": id, "name": name, "missing": "creator_id", "error": str(e)})
 
         try:
             context_artist = get_artist_by_name(music_artist)
@@ -827,7 +827,7 @@ def synchronize_data():
                 cursor.execute(''' UPDATE layout SET artist_id = ? WHERE id = ?; ''', (context_artist[0][0], id,))
         except Exception as e:
             applogger.warning(f"[LAYOUT:{id}] Failed to update artist_id: {e}")
-            missing_data["layout"].append({"id": id, "missing": "artist_id", "error": str(e)})
+            missing_data["layout"].append({"id": id, "name": name, "missing": "artist_id", "error": str(e)})
 
         try:
             context_music = get_music_by_name(music_name)
@@ -835,7 +835,7 @@ def synchronize_data():
                 cursor.execute(''' UPDATE layout SET music_id = ? WHERE id = ?; ''', (context_music[0][0], id,))
         except Exception as e:
             applogger.warning(f"[LAYOUT:{id}] Failed to update music_id: {e}")
-            missing_data["layout"].append({"id": id, "missing": "music_id", "error": str(e)})
+            missing_data["layout"].append({"id": id, "name": name, "missing": "music_id", "error": str(e)})
 
         try:
             if masterlevel:
@@ -849,14 +849,14 @@ def synchronize_data():
                     pass
         except Exception as e:
             applogger.warning(f"[LAYOUT:{id}] Failed to update masterlevel_id: {e}")
-            missing_data["layout"].append({"id": id, "missing": "masterlevel_id", "error": str(e)})
+            missing_data["layout"].append({"id": id, "name": name, "missing": "masterlevel_id", "error": str(e)})
 
     # --- Update collab table IDs similarly ---
 
-    cursor.execute(''' SELECT id, host_name, music_name, music_artist FROM collab WHERE host_id IS NULL OR artist_id IS NULL OR music_id is NULL; ''')
+    cursor.execute(''' SELECT id, name, host_name, music_name, music_artist FROM collab WHERE host_id IS NULL OR artist_id IS NULL OR music_id is NULL; ''')
     collabs = cursor.fetchall()
 
-    for id, host_name, music_name, music_artist in collabs:
+    for id, name, host_name, music_name, music_artist in collabs:
 
         try:
 
@@ -866,7 +866,7 @@ def synchronize_data():
 
         except Exception as e:
             applogger.warning(f"[COLLAB:{id}] Failed to update host_id: {e}")
-            missing_data["collab"].append({"id": id, "missing": "host_id", "error": str(e)})
+            missing_data["collab"].append({"id": id, "name": name, "missing": "host_id", "error": str(e)})
 
         try:
 
@@ -876,7 +876,7 @@ def synchronize_data():
         
         except Exception as e:
             applogger.warning(f"[COLLAB:{id}] Failed to update artist_id: {e}")
-            missing_data["collab"].append({"id": id, "missing": "artist_id", "error": str(e)})
+            missing_data["collab"].append({"id": id, "name": name, "missing": "artist_id", "error": str(e)})
 
         try:
 
@@ -886,13 +886,13 @@ def synchronize_data():
 
         except Exception as e:
             applogger.warning(f"[COLLAB:{id}] Failed to update music_id: {e}")
-            missing_data["collab"].append({"id": id, "missing": "music_id", "error": str(e)})
+            missing_data["collab"].append({"id": id, "name": name, "missing": "music_id", "error": str(e)})
 
 
-    cursor.execute(''' SELECT id, artist FROM music WHERE artist_id IS NULL; ''')
+    cursor.execute(''' SELECT id, name, artist FROM music WHERE artist_id IS NULL; ''')
     musics = cursor.fetchall()
 
-    for id, artist in musics:
+    for id, name, artist in musics:
 
         try:
             context_artist = get_artist_by_name(artist)
@@ -900,7 +900,7 @@ def synchronize_data():
                 cursor.execute(''' UPDATE music SET artist_id = ? WHERE id = ?; ''', (context_artist[0][0], id,))
         except Exception as e:
             applogger.warning(f"[MUSIC:{id}] Failed to update artist_id: {e}")
-            missing_data["music"].append({"id": id, "missing": "artist_id", "error": str(e)})
+            missing_data["music"].append({"id": id, "name": name, "missing": "artist_id", "error": str(e)})
 
     # --- Update creator stats (layouts_registered, collab_participations, total_time_built) ---
 

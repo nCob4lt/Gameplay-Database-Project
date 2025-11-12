@@ -379,7 +379,7 @@ class MainCog(commands.Cog):
             if not entries:
                 return "No issues found."
             return "\n".join([
-                f"• ID `{e.get('id', '?')}` — **{e.get('missing', 'Unknown')}** *(Error: {e.get('error', 'N/A')})*"
+                f"• ID `{e.get('id', '?')}` | `{e.get('name', '?')}` — **{e.get('missing', 'Unknown')}** *(Error: {e.get('error', 'N/A')})*"
                 for e in entries[:10]
             ]) + (f"\n…and {len(entries) - 10} more." if len(entries) > 10 else "")
 
