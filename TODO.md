@@ -18,6 +18,11 @@
 - Add constants file ✅
 - Change database path ✅
 - Add pages settings for list commands ✅
-- Add /random command
-- Add gdusername in creator table
-- Add /about command 
+- Add gdusername in creator table ✅
+- Add /random command ✅
+- Add /about command ✅
+- Add /help command ✅
+- Update full docstring ✅
+- Add discord mentions to /get_creator_by_name and /*_from commands
+- Update discord info in sync
+- Write README.md 
