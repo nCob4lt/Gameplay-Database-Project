@@ -23,6 +23,7 @@
 - Add /about command ✅
 - Add /help command ✅
 - Update full docstring ✅
-- Add discord mentions to /get_creator_by_name and /*_from commands
+- Add discord mentions to /*_from commands ✅
+- Add names in /missing ✅
 - Update discord info in sync
 - Write README.md 
