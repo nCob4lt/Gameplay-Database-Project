@@ -382,5 +382,11 @@ async def resolve_user(input_value: str, interaction: discord.Interaction) -> Un
 
     return input_value
 
+def convert_value(attr: str, value: str):
+    int_fields = ["discord_uid", "music_ngid", "igid"]
+    if attr in int_fields:
+        return int(value)
+    return value
+
 
         

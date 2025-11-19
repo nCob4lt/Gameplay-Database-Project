@@ -177,7 +177,7 @@ class QueryCog(commands.Cog):
         try:
             get = database.get_layout_by_name(name)
         except DataNotFound:
-            await interaction.response.send_message("**User** not found.")
+            await interaction.response.send_message("**Layout** not found.")
             applogger.error(f"Empty response on {interaction.command.name} ran by {interaction.user.name} in {interaction.guild.name}")
             return
 

@@ -43,13 +43,12 @@ class ReviewRequestView(discord.ui.View):
 
     @discord.ui.button(label="✅ Accept", style=discord.ButtonStyle.success)
     async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
-
         """
         Accept and process the pending request.
 
-        Fetches request details from the database and enqueues the corresponding registration 
-        function to add it permanently. Only valid request types are processed. Upon completion, 
-        the request is removed from the queue.
+        Fetches request details from the database and enqueues the corresponding
+        registration function (for new entries) or update function (for update requests).
+        Upon completion, the request is removed from the queue.
 
         Parameters
         ----------
@@ -60,23 +59,26 @@ class ReviewRequestView(discord.ui.View):
 
         Notes
         -----
-        - Supports request types: "creator", "layout", "collab", "music", "artist".
-        - Unknown request types will log an error and abort processing.
+        - Supports request types: "creator", "layout", "collab", "music", "artist",
+        and "update_*" for updates on each table.
         - Database operations are enqueued to `database.database_queue` for asynchronous execution.
         """
 
         try:
             details = database.get_request_details(self.request_type, self.request_id)
         except DataNotFound:
-            await interaction.response.edit_message(content="**Failed** to fetch request details, check traceback for more info",
-                                                     embed=None,
-                                                       view=None)
+            await interaction.response.edit_message(
+                content="**Failed** to fetch request details, check traceback for more info",
+                embed=None,
+                view=None
+            )
             return
-        
+
+        # Nouveau mapping pour gérer les updates
         match self.request_type:
 
+            # Enregistrements classiques
             case "creator":
-                
                 await database.database_queue.put((
                     database.register_creator,
                     (
@@ -86,7 +88,7 @@ class ReviewRequestView(discord.ui.View):
                         details["discord_uid"],
                         details["yt"],
                         details["gdusername"],
-                        interaction.user.name,  # registrator
+                        interaction.user.name,
                     ),
                     {}
                 ))
@@ -106,7 +108,7 @@ class ReviewRequestView(discord.ui.View):
                         details["igid"],
                         details["masterlevel"],
                         details["recorder_notes"],
-                        interaction.user.name,  # registrator
+                        interaction.user.name,
                     ),
                     {}
                 ))
@@ -124,7 +126,7 @@ class ReviewRequestView(discord.ui.View):
                         details["music_artist"],
                         details["music_ngid"],
                         details["igid"],
-                        interaction.user.name,  # registrator
+                        interaction.user.name,
                         details["recorder_notes"],
                     ),
                     {}
@@ -141,7 +143,7 @@ class ReviewRequestView(discord.ui.View):
                         details["yt"],
                         details["soundcloud"],
                         details["ngid"],
-                        interaction.user.name,  # registrator
+                        interaction.user.name,
                         details["recorder_notes"],
                     ),
                     {}
@@ -154,9 +156,22 @@ class ReviewRequestView(discord.ui.View):
                         details["name"],
                         details["yt"],
                         details["soundcloud"],
-                        interaction.user.name,  # registrator
+                        interaction.user.name,
                         details["recorder_notes"],
                     ),
+                    {}
+                ))
+
+            # Requêtes de mise à jour
+            case "update_creator" | "update_layout" | "update_collab" | "update_music" | "update_artist":
+                table = self.request_type.replace("update_", "")
+                attr = details["column_name"]
+                value = details["new_value"]
+                entry_id = details["target_id"]
+
+                await database.database_queue.put((
+                    database.update,
+                    (table, entry_id, attr, value),
                     {}
                 ))
 
@@ -168,11 +183,18 @@ class ReviewRequestView(discord.ui.View):
                 )
                 applogger.error(f"Unknown request type {self.request_type}")
                 return
-            
+
+        # Supprime la requête de la table request_*
         database.delete_request(self.request_type, self.request_id)
 
-        await interaction.response.edit_message(content="✅ Request **accepted** and **processed!**", embed=None, view=None)
-        applogger.info(f"Request {self.request_type} ID: {self.request_id} accepted by {interaction.user} in {interaction.guild.name}")
+        await interaction.response.edit_message(
+            content="✅ Request **accepted** and **processed!**",
+            embed=None,
+            view=None
+        )
+        applogger.info(
+            f"Request {self.request_type} ID: {self.request_id} accepted by {interaction.user} in {interaction.guild.name}"
+        )
 
     @discord.ui.button(label="❌ Reject", style=discord.ButtonStyle.danger)
     async def reject(self, interaction: discord.Interaction, button: discord.ui.Button):

@@ -225,7 +225,59 @@ def initialize():
                    soundcloud TEXT,
                    registration_date TEXT,
                    recorder_name TEXT,
-                   recorder_notes TEXT)''')
+                   recorder_notes TEXT);''')
+    
+    # REQUEST UPDATE TABLES
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS request_update_creator (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    target_id INTEGER NOT NULL,
+                    column_name TEXT NOT NULL,
+                    old_value TEXT,
+                    new_value TEXT,
+                    recorder_name TEXT NOT NULL,
+                    registration_date TEXT
+                    );''')
+    
+    cursor.execute('''CREATE TABLE IF NOT EXISTS request_update_layout (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    target_id INTEGER NOT NULL,
+                    column_name TEXT NOT NULL,
+                    old_value TEXT,
+                    new_value TEXT,
+                    recorder_name TEXT NOT NULL,
+                    registration_date TEXT
+                    );''')
+    
+    cursor.execute('''CREATE TABLE IF NOT EXISTS request_update_collab (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    target_id INTEGER NOT NULL,
+                    column_name TEXT NOT NULL,
+                    old_value TEXT,
+                    new_value TEXT,
+                    recorder_name TEXT NOT NULL,
+                    registration_date TEXT
+                    );''')
+    
+    cursor.execute('''CREATE TABLE IF NOT EXISTS request_update_music (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    target_id INTEGER NOT NULL,
+                    column_name TEXT NOT NULL,
+                    old_value TEXT,
+                    new_value TEXT,
+                    recorder_name TEXT NOT NULL,
+                    registration_date TEXT
+                    );''')
+    
+    cursor.execute('''CREATE TABLE IF NOT EXISTS request_update_artist (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    target_id INTEGER NOT NULL,
+                    column_name TEXT NOT NULL,
+                    old_value TEXT,
+                    new_value TEXT,
+                    recorder_name TEXT NOT NULL,
+                    registration_date TEXT
+                    );''')
     
     connection.commit()
 
@@ -482,6 +534,90 @@ def register_request_artist(name, yt, soundcloud, recorder_notes, registrator):
                         recorder_notes
                       ) VALUES (?,?,?,?,?,?);''',
                    (name, yt, soundcloud, dt, registrator, recorder_notes))
+    
+    connection.commit()
+
+def register_update_creator(target_id, column_name, old_value, new_value, registrator):
+
+    dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+    cursor.execute('''INSERT INTO request_update_creator (
+                        target_id,
+                        column_name,
+                        old_value,
+                        new_value,
+                        recorder_name,
+                        registration_date
+                      ) VALUES (?,?,?,?,?,?);''',
+                   (target_id, column_name, old_value, new_value, registrator, dt))
+    
+    connection.commit()
+
+
+def register_update_layout(target_id, column_name, old_value, new_value, registrator):
+
+    dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+    cursor.execute('''INSERT INTO request_update_layout (
+                        target_id,
+                        column_name,
+                        old_value,
+                        new_value,
+                        recorder_name,
+                        registration_date
+                      ) VALUES (?,?,?,?,?,?);''',
+                   (target_id, column_name, old_value, new_value, registrator, dt))
+    
+    connection.commit()
+
+
+def register_update_collab(target_id, column_name, old_value, new_value, registrator):
+
+    dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+    cursor.execute('''INSERT INTO request_update_collab (
+                        target_id,
+                        column_name,
+                        old_value,
+                        new_value,
+                        recorder_name,
+                        registration_date
+                      ) VALUES (?,?,?,?,?,?);''',
+                   (target_id, column_name, old_value, new_value, registrator, dt))
+    
+    connection.commit()
+
+
+def register_update_music(target_id, column_name, old_value, new_value, registrator):
+
+    dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+    cursor.execute('''INSERT INTO request_update_music (
+                        target_id,
+                        column_name,
+                        old_value,
+                        new_value,
+                        recorder_name,
+                        registration_date
+                      ) VALUES (?,?,?,?,?,?);''',
+                   (target_id, column_name, old_value, new_value, registrator, dt))
+    
+    connection.commit()
+
+
+def register_update_artist(target_id, column_name, old_value, new_value, registrator):
+
+    dt = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+    cursor.execute('''INSERT INTO request_update_artist (
+                        target_id,
+                        column_name,
+                        old_value,
+                        new_value,
+                        recorder_name,
+                        registration_date
+                      ) VALUES (?,?,?,?,?,?);''',
+                   (target_id, column_name, old_value, new_value, registrator, dt))
     
     connection.commit()
 
@@ -1061,38 +1197,95 @@ def execute_queries(script: str):
 
 def get_oldest_request():
 
-    
+    """
+    Returns the oldest pending registration or update request from all tables.
+    """
+
     cursor.execute('''
-                   
-    SELECT 'creator' AS type, rowid AS id, registration_date FROM requestcreator
-    UNION ALL
-    SELECT 'layout', rowid, registration_date FROM requestlayout
-    UNION ALL
-    SELECT 'collab', rowid, registration_date FROM requestcollab
-    UNION ALL
-    SELECT 'music', rowid, registration_date FROM requestmusic
-    UNION ALL
-    SELECT 'artist', rowid, registration_date FROM requestartist
-    ORDER BY registration_date ASC
-    LIMIT 1;'''
-                   )
+        SELECT 'creator' AS type, rowid AS id, registration_date FROM requestcreator
+        UNION ALL
+        SELECT 'layout', rowid, registration_date FROM requestlayout
+        UNION ALL
+        SELECT 'collab', rowid, registration_date FROM requestcollab
+        UNION ALL
+        SELECT 'music', rowid, registration_date FROM requestmusic
+        UNION ALL
+        SELECT 'artist', rowid, registration_date FROM requestartist
+        UNION ALL
+        SELECT 'update_creator', rowid, registration_date FROM request_update_creator
+        UNION ALL
+        SELECT 'update_layout', rowid, registration_date FROM request_update_layout
+        UNION ALL
+        SELECT 'update_collab', rowid, registration_date FROM request_update_collab
+        UNION ALL
+        SELECT 'update_music', rowid, registration_date FROM request_update_music
+        UNION ALL
+        SELECT 'update_artist', rowid, registration_date FROM request_update_artist
+        ORDER BY registration_date ASC
+        LIMIT 1;
+    ''')
 
     result = cursor.fetchone()
     if not result:
-        raise DataNotFound(f"No request found")
+        raise DataNotFound("No request found")
     return result
 
-def get_request_details(type_, id_):
 
-    table = f"request{type_}"
-    cursor.execute(f"SELECT * FROM {table} WHERE rowid = ?", (id_,))
+def get_request_details(request_type: str, request_id: int):
+
+    """
+    Fetch the details of a pending request from the correct request table.
+    """
+
+    table_map = {
+
+        "creator": "requestcreator",
+        "layout": "requestlayout",
+        "collab": "requestcollab",
+        "music": "requestmusic",
+        "artist": "requestartist",
+        "update_creator": "request_update_creator",
+        "update_layout": "request_update_layout",
+        "update_collab": "request_update_collab",
+        "update_music": "request_update_music",
+        "update_artist": "request_update_artist",
+    }
+
+    if request_type not in table_map:
+        raise DataNotFound(f"Unknown request type: {request_type}")
+
+    table = table_map[request_type]
+
+    cursor.execute(f"SELECT * FROM {table} WHERE rowid = ?;", (request_id,))
     result = cursor.fetchone()
+
     if not result:
-        raise DataNotFound(f"No request found")
-    return result
+        raise DataNotFound(f"No request with ID {request_id} in {table}")
 
-def delete_request(type_, id_):
+    return dict(result)
 
-    table = f"request{type_}"
-    cursor.execute(f"DELETE FROM {table} WHERE rowid = ?", (id_,))
+def delete_request(request_type: str, request_id: int):
+    """
+    Deletes a pending request from the correct table.
+    """
+
+    table_map = {
+        "creator": "requestcreator",
+        "layout": "requestlayout",
+        "collab": "requestcollab",
+        "music": "requestmusic",
+        "artist": "requestartist",
+        "update_creator": "request_update_creator",
+        "update_layout": "request_update_layout",
+        "update_collab": "request_update_collab",
+        "update_music": "request_update_music",
+        "update_artist": "request_update_artist",
+    }
+
+    if request_type not in table_map:
+        raise DataNotFound(f"Unknown request type: {request_type}")
+
+    table = table_map[request_type]
+
+    cursor.execute(f"DELETE FROM {table} WHERE rowid = ?;", (request_id,))
     connection.commit()

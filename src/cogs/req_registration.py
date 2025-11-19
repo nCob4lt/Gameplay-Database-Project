@@ -49,7 +49,7 @@ class RequestRegistrationCog(commands.Cog):
         resolved_user = await tools.resolve_user(user, interaction)
         registrator = interaction.user.name
 
-        if isinstance(resolved_user, discord.User):
+        if isinstance(resolved_user, (discord.User, discord.Member)):
             username = resolved_user.global_name or resolved_user.name
             discord_uname = resolved_user.name
             discord_uid = resolved_user.id
