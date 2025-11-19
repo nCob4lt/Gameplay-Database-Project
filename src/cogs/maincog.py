@@ -502,12 +502,17 @@ class MainCog(commands.Cog):
                 ("/parts_from", "List parts created by a creator"),
                 ("/parts_of", "List parts associated with a layout or collab")
             ],
-            "🛠 Registration requests": [
+            "🛠 Registration/update requests": [
                 ("/request_artist", "Request the registration of an artist"),
                 ("/request_collab", "Request the registration of a collab"),
                 ("/request_creator", "Request the registration of a creator"),
                 ("/request_layout", "Request the registration of a layout"),
-                ("/request_music", "Request the registration of a music")
+                ("/request_music", "Request the registration of a music"),
+                ("/request_update_creator", "Request the update of a creator entry"),
+                ("/request_update_layout", "Request the update of a layout entry"),
+                ("/request_update_collab", "Request the update of a collab entry"),
+                ("/request_update_music", "Request the update of a music entry"),
+                ("/request_update_artist", "Request the update of a artist entry")
             ],
             "ℹ️ General": [
                 ("/about", "Information about the bot"),
@@ -520,6 +525,11 @@ class MainCog(commands.Cog):
                 ("/add_creator", "Add a new creator to the database"),
                 ("/add_layout", "Add a new layout to the database"),
                 ("/add_music", "Add a new music to the database"),
+                ("/update_creator", "Update infos about a creator"),
+                ("/update_layout", "Update infos about a layout"),
+                ("/update_collab", "Update infos about a collab"),
+                ("/update_music", "Update infos about a music"),
+                ("/update_artist", "Update infos about a artist")
                 ("/review_next_request", "Review the next pending registration request")
             ]
         }

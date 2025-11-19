@@ -196,10 +196,6 @@ class RequestUpdateCog(commands.Cog):
             discord.app_commands.Choice(name="Type", value="type"),
             discord.app_commands.Choice(name="YouTube", value="yt"),
             discord.app_commands.Choice(name="SoundCloud", value="soundcloud"),
-            discord.app_commands.Choice(name="Name", value="name"),
-            discord.app_commands.Choice(name="Artist", value="artist"),
-            discord.app_commands.Choice(name="Length", value="length"),
-            discord.app_commands.Choice(name="Recorder Notes", value="recorder_notes"),
         ]
     )
     async def request_update_music(self, interaction: discord.Interaction, id: int, field: discord.app_commands.Choice[str], value: str):
