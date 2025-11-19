@@ -540,6 +540,37 @@ def get_artist_by_name(artist_name):
         raise DataNotFound(f"No artist found with name '{artist_name}'")
     return result
 
+def get_layout_by_id(layout_id):
+    cursor.execute('''SELECT * FROM layout WHERE id = ?;''', (layout_id,))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No layout found with id '{layout_id}'")
+    return result
+
+
+def get_collab_by_id(collab_id):
+    cursor.execute('''SELECT * FROM collab WHERE id = ?;''', (collab_id,))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No collab found with id '{collab_id}'")
+    return result
+
+
+def get_music_by_id(music_id):
+    cursor.execute('''SELECT * FROM music WHERE id = ?;''', (music_id,))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No music found with id '{music_id}'")
+    return result
+
+
+def get_artist_by_id(artist_id):
+    cursor.execute('''SELECT * FROM artist WHERE id = ?;''', (artist_id,))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No artist found with id '{artist_id}'")
+    return result
+
 def get_random_layout():
     cursor.execute(''' SELECT * FROM layout ORDER BY RANDOM() LIMIT 1''')
     result = cursor.fetchone()
@@ -781,6 +812,9 @@ def get_musics():
 def get_artists():
     cursor.execute(''' SELECT * FROM artist; ''')
     return cursor.fetchall()
+
+def update(table, id, attr, value):
+    cursor.execute(''' UPDATE ? SET ? = ? WHERE id = ?; ''', (table, attr, value, id,))
 
 
 def synchronize_data():
