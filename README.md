@@ -12,7 +12,7 @@ A discord bot to manage creators, layouts, collabs and musics for Geometry Dash
 
 ## How it works 
 
-- The Gameplay Database has 10 tables which contains the attributes of the following objects : creator, layout, collab, music, artist
+- The Gameplay Database has 5 tables which contains the attributes of the following objects : creator, layout, collab, music, artist
 
 ### Table creator
 
@@ -106,6 +106,14 @@ Note : If a layout is a **collab** part, the masterlevel is the level the part b
 - recorder_name (Name of the user who registered the entry)
 - recorder_notes (Notes written by the recorder)
 
+## Precautions to take before submitting recordings
+
+- When registering infos, make sure to respect the case of writing, because when retrieving infos, the bot will not found anything but the exact same name as registered.
+- Before registering object, check beforehand it does not already exist in the database
+- When registering, try to fill in (if you can) all the optional informations
+- When registering a collab, do not forget to register all the collab parts that belongs to it afterwards, or vice versa
+- Images are found by YouTube API, try to fill them all the time.
+
 ---
 
 ## Synchronization
@@ -146,7 +154,14 @@ The /missing command will then read this file and display all unresolved or inco
 - `/request_collab` — Request the registration of a collab  
 - `/request_creator` — Request the registration of a creator  
 - `/request_layout` — Request the registration of a layout  
-- `/request_music` — Request the registration of a music  
+- `/request_music` — Request the registration of a music
+- `/request_update_creator` — Request the update of a creator entry
+- `/request_update_layout` — Request the update of a layout entry
+- `/request_update_collab` — Request the update of a collab entry
+- `/request_update_music` — Request the update of a music entry
+- `/request_update_artist` — Request the update of a artist entry
+
+### 🛠 Update requests
 
 ### ℹ️ General
 
