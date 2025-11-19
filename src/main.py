@@ -21,6 +21,7 @@ from cogs.errorhandler import ErrorHandlerCog
 from cogs.req_registration import RequestRegistrationCog
 from cogs.review import ReviewCog
 from cogs.list import ListCog
+from cogs.update import UpdateCog
 from utilities.applogger import AppLogger
 
 # --- Logger instantiation ---
@@ -72,6 +73,7 @@ class GameplayDatabase(commands.Bot):
         await bot.add_cog(RequestRegistrationCog(bot))
         await bot.add_cog(ReviewCog(bot))
         await bot.add_cog(ListCog(bot))
+        await bot.add_cog(UpdateCog(bot))
         
 
         synced = await self.tree.sync()

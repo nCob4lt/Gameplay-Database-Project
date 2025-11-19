@@ -540,6 +540,25 @@ def get_artist_by_name(artist_name):
         raise DataNotFound(f"No artist found with name '{artist_name}'")
     return result
 
+def get_creator_by_id(uid):
+
+    """
+
+    Retrieves a creator by id.
+
+    Raises
+    ------
+    DataNotFound
+        If no creator exists with the given id.
+
+    """
+
+    cursor.execute('''SELECT * FROM creator WHERE id = ?;''', (uid,))
+    result = cursor.fetchall()
+    if not result:
+        raise DataNotFound(f"No creator found with id '{uid}'")
+    return result
+
 def get_layout_by_id(layout_id):
     cursor.execute('''SELECT * FROM layout WHERE id = ?;''', (layout_id,))
     result = cursor.fetchall()
@@ -813,8 +832,31 @@ def get_artists():
     cursor.execute(''' SELECT * FROM artist; ''')
     return cursor.fetchall()
 
-def update(table, id, attr, value):
-    cursor.execute(''' UPDATE ? SET ? = ? WHERE id = ?; ''', (table, attr, value, id,))
+def update(table: str, entry_id: int, attr: str, value):
+
+    """
+    Update one attribute of a row in a table.
+
+    table: name of the table
+    entry_id: id of the row to update
+    attr: column name to update
+    value: new value
+    """
+
+    allowed_tables = {"creator", "layout", "collab", "music", "artist"}
+
+    if table not in allowed_tables:
+        raise ValueError(f"Invalid table name '{table}'")
+
+    cursor.execute(f"PRAGMA table_info({table})")
+    cols = {row[1] for row in cursor.fetchall()}
+
+    if attr not in cols:
+        raise ValueError(f"Invalid column '{attr}' in table '{table}'")
+
+    sql = f"UPDATE {table} SET {attr} = ? WHERE id = ?"
+    cursor.execute(sql, (value, entry_id))
+    connection.commit()
 
 
 def synchronize_data():

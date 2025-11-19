@@ -171,6 +171,9 @@ def get_youtube_id(url):
 
     """
 
+    if not url:
+        return None
+
     if "youtu.be" in url:
         return url.split("/")[-1]
     
