@@ -66,6 +66,7 @@ class RequestUpdateCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=interaction.client.user.avatar)
         embed.set_thumbnail(url=interaction.client.user.avatar)
 
+        applogger.debug_command(interaction)
         await interaction.followup.send(embed=embed)
 
 
@@ -122,6 +123,7 @@ class RequestUpdateCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=interaction.client.user.avatar)
         embed.set_thumbnail(url=interaction.client.user.avatar)
 
+        applogger.debug_command(interaction)
         await interaction.followup.send(embed=embed)
 
 
@@ -178,6 +180,7 @@ class RequestUpdateCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=interaction.client.user.avatar)
         embed.set_thumbnail(url=interaction.client.user.avatar)
 
+        applogger.debug_command(interaction)
         await interaction.followup.send(embed=embed)
 
 
@@ -234,6 +237,7 @@ class RequestUpdateCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=interaction.client.user.avatar)
         embed.set_thumbnail(url=interaction.client.user.avatar)
 
+        applogger.debug_command(interaction)
         await interaction.followup.send(embed=embed)
 
 
@@ -291,4 +295,5 @@ class RequestUpdateCog(commands.Cog):
         embed.set_footer(text="Gameplay Database", icon_url=interaction.client.user.avatar)
         embed.set_thumbnail(url=interaction.client.user.avatar)
 
+        applogger.debug_command(interaction)
         await interaction.followup.send(embed=embed)

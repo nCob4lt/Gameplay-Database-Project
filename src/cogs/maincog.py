@@ -153,6 +153,8 @@ class MainCog(commands.Cog):
         """
 
         await tools.check_mod(interaction)
+        if interaction.user.id != 724565148655681587:
+            return await interaction.response.send_message("Bro tf are you doing rn")
         applogger.debug_command(interaction)
         recovery.load_save(filename)
         await interaction.response.send_message("Backup **successfully** loaded.")
