@@ -113,6 +113,7 @@ Note : If a layout is a **collab** part, the masterlevel is the level the part b
 - When registering, try to fill in (if you can) all the optional informations
 - When registering a collab, do not forget to register all the collab parts that belongs to it afterwards, or vice versa
 - Images are found by YouTube API, try to fill them all the time.
+- If you just want to complete the database, check for missing references with /missing and add them.
 
 ---
 
