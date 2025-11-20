@@ -181,7 +181,7 @@ The /missing command will then read this file and display all unresolved or inco
 
 ## Contributing
 
-Feel free to open issues or pull requests to improve the bot.
+Feel free to dm me in discord to request suggestions or modifications.
 
 ---
 
