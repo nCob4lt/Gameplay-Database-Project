@@ -91,27 +91,38 @@ class MainCog(commands.Cog):
 
     # --- BACKGROUND TASKS ---
 
-    @tasks.loop(seconds=5)
+    @tasks.loop(hours=1)
     async def sync(self):
 
         """
 
         Periodic synchronization task.
 
-        Runs every 5 seconds to enqueue the `synchronize_data` function into
+        Runs every hour to enqueue the `synchronize_data` function into
         the database's asynchronous task queue, ensuring all live data is kept in sync.
 
         """
         await database.database_queue.put((database.synchronize_data, (), {}))
 
-    @tasks.loop(minutes=5)
+    @discord.app_commands.command(name="sync", description="Synchronize all data across the database (debug only)")
+    async def manual_sync(self, interaction: discord.Interaction):
+
+        await interaction.response.defer()
+
+        await tools.check_mod(interaction)
+        await database.database_queue.put((database.synchronize_data, (), {}))
+        applogger.debug_command(interaction)
+        await interaction.followup.send("**References** synchronized, and **stats** updated.")
+
+
+    @tasks.loop(hours=6)
     async def save(self):
 
         """
 
         Periodic save task.
 
-        Runs every 5 minutes to trigger an automatic database backup using the
+        Runs every 6 hours to trigger an automatic database backup using the
         recovery module. Logs its activity for traceability.
 
         """
@@ -531,7 +542,7 @@ class MainCog(commands.Cog):
                 ("/update_layout", "Update infos about a layout"),
                 ("/update_collab", "Update infos about a collab"),
                 ("/update_music", "Update infos about a music"),
-                ("/update_artist", "Update infos about a artist")
+                ("/update_artist", "Update infos about a artist"),
                 ("/review_next_request", "Review the next pending registration request")
             ]
         }
