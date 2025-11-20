@@ -156,13 +156,14 @@ The /missing command will then read this file and display all unresolved or inco
 - `/request_creator` — Request the registration of a creator  
 - `/request_layout` — Request the registration of a layout  
 - `/request_music` — Request the registration of a music
+
+### 🛠 Update requests
+
 - `/request_update_creator` — Request the update of a creator entry
 - `/request_update_layout` — Request the update of a layout entry
 - `/request_update_collab` — Request the update of a collab entry
 - `/request_update_music` — Request the update of a music entry
 - `/request_update_artist` — Request the update of a artist entry
-
-### 🛠 Update requests
 
 ### ℹ️ General
 
